@@ -10,7 +10,8 @@ interface DashboardLayoutProps {
   children: React.ReactNode
 }
 
-export default async function DashboardLayout({ children }: DashboardLayoutProps) {\n  const supabase = await createClient()
+export default async function DashboardLayout({ children }: DashboardLayoutProps) {
+  const supabase = await createClient()
 
   const {
     data: { user },
