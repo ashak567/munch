@@ -83,11 +83,15 @@ export default function NewDecisionPage() {
   const [inputValue, setInputValue] = useState('')
   const [inputError, setInputError] = useState<string | null>(null)
   
+  // Custom Mood / Context States (Task 4)
+  const [emotionalState, setEmotionalState] = useState('')
+  const [currentContext, setCurrentContext] = useState('')
+  
   // Selection/Animation States
   const [selectedIndex, setSelectedIndex] = useState<number>(-1)
   const [animationIndex, setAnimationIndex] = useState<number>(-1)
   const [detectedCategory, setDetectedCategory] = useState<string>('Other')
-  const [reinforcement, setReinforcement] = useState<{ reasons: string[]; message: string } | null>(null)
+  const [reinforcement, setReinforcement] = useState<{ reasoning: string; encouragement: string; follow_up_question: string } | null>(null)
   const [decisionId, setDecisionId] = useState<string | null>(null)
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
   
@@ -260,6 +264,8 @@ export default function NewDecisionPage() {
       },
       body: JSON.stringify({
         options: options.map(o => o.text),
+        emotionalState,
+        currentContext,
       }),
     })
       .then(async (res) => {
@@ -340,14 +346,14 @@ export default function NewDecisionPage() {
         </button>
         <div>
           <h2 className="font-display font-extrabold text-2xl text-charcoal">
-            {step === 'INPUT' && 'What are we picking?'}
-            {step === 'SELECTING' && 'Munch is thinking...'}
-            {step === 'RESULT' && "Here's your pick!"}
+            {step === 'INPUT' && "What's on your mind today?"}
+            {step === 'SELECTING' && 'Munch is reflecting...'}
+            {step === 'RESULT' && "This feels like a lovely path!"}
           </h2>
           <p className="text-2xs text-charcoal/60">
-            {step === 'INPUT' && 'Enter your choices below'}
-            {step === 'SELECTING' && 'Calculating probabilities'}
-            {step === 'RESULT' && `Category: ${detectedCategory}`}
+            {step === 'INPUT' && 'Share the options you are weighing'}
+            {step === 'SELECTING' && 'Finding a gentle way forward'}
+            {step === 'RESULT' && `Reflection: ${detectedCategory}`}
           </p>
         </div>
       </div>
@@ -403,12 +409,41 @@ export default function NewDecisionPage() {
               )}
             </div>
 
+            {/* Optional Mood & Context Panel */}
+            <div className="bg-white/45 backdrop-blur-sm border border-white/60 rounded-2xl p-4 shadow-sm space-y-3">
+              <span className="text-[10px] font-bold text-charcoal/50 uppercase tracking-wider block">
+                How are you feeling in this moment? (Optional) 🍀
+              </span>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-charcoal/50 uppercase tracking-wider block">Your Mood</label>
+                  <input
+                    type="text"
+                    value={emotionalState}
+                    onChange={(e) => setEmotionalState(e.target.value)}
+                    placeholder="e.g. tired, overwhelmed"
+                    className="w-full px-3 py-2 text-xs border border-white/80 rounded-xl bg-white/80 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary-dark shadow-sm text-charcoal"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-[9px] font-black text-charcoal/50 uppercase tracking-wider block">Your Context</label>
+                  <input
+                    type="text"
+                    value={currentContext}
+                    onChange={(e) => setCurrentContext(e.target.value)}
+                    placeholder="e.g. studying, busy day"
+                    className="w-full px-3 py-2 text-xs border border-white/80 rounded-xl bg-white/80 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary-dark shadow-sm text-charcoal"
+                  />
+                </div>
+              </div>
+            </div>
+
             {/* Fatigue Warning (20+ options) */}
             {options.length >= 20 && (
               <div className="flex items-start gap-2 bg-yellow/15 border border-yellow/30 text-yellow-800 rounded-xl p-3 text-2xs">
                 <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
                 <span>
-                  <strong>Whoa! That's {options.length} options!</strong> Having too many choices might worsen decision fatigue. Feel free to proceed, but consider trimming duplicates!
+                  <strong>That is a lot of thoughts!</strong> Weighing too many options can feel a bit overwhelming. Feel free to continue, or maybe take a breath and see if you can simplify them.
                 </span>
               </div>
             )}
@@ -417,7 +452,7 @@ export default function NewDecisionPage() {
             <div className="space-y-2">
               <div className="flex justify-between items-center px-1">
                 <span className="text-2xs font-semibold text-charcoal/50">
-                  OPTIONS ({options.length})
+                  YOUR THOUGHTS ({options.length})
                 </span>
                 {options.length > 0 && (
                   <button
@@ -434,7 +469,7 @@ export default function NewDecisionPage() {
                 <div className="glass-card rounded-2xl p-8 border border-white/50 text-center flex flex-col items-center justify-center gap-2">
                   <span className="text-3xl animate-float">🌱</span>
                   <p className="text-xs text-charcoal/50 leading-relaxed max-w-xs">
-                    No options added yet. Add at least 2 things you're stuck choosing between to let Munch pick!
+                    Write down at least two paths you're stuck between, and we'll find a gentle way forward together.
                   </p>
                 </div>
               ) : (
@@ -478,7 +513,7 @@ export default function NewDecisionPage() {
             <div className="w-full max-w-sm px-4">
               <div className="glass-panel border-2 border-primary rounded-3xl p-6 shadow-lg min-h-[96px] flex items-center justify-center transition-all duration-100">
                 <span className="text-lg font-bold text-primary-dark animate-pulse break-all text-center">
-                  {options[animationIndex]?.text || 'Picking...'}
+                  {options[animationIndex]?.text || 'Reflecting...'}
                 </span>
               </div>
             </div>
@@ -496,7 +531,7 @@ export default function NewDecisionPage() {
               </div>
               
               <span className="text-3xs font-black tracking-widest text-primary-dark uppercase bg-primary/20 border border-primary-dark/30 rounded-full px-3 py-1 inline-block mb-3">
-                MUNCH'S PICK
+                A GENTLE START
               </span>
               
               <h2 className="font-display text-2xl font-black text-charcoal break-all max-w-[280px] mx-auto leading-tight">
@@ -506,31 +541,24 @@ export default function NewDecisionPage() {
 
             {/* Mascot reinforcement block */}
             <div className="glass-card rounded-3xl p-5 border border-white/50 space-y-4">
-              <div className="flex gap-3 items-start">
-                <Mascot 
-                  character={getMascotCharacter()} 
-                  expression={getMascotExpression()} 
-                  size="sm" 
-                  className="flex-shrink-0" \n                />
-                <div>
-                  <h4 className="font-display font-extrabold text-sm text-charcoal">Why this is awesome:</h4>
-                  <p className="text-2xs text-charcoal/70 italic mt-0.5">
-                    "{reinforcement?.message}"
+              <div className="flex gap-4 items-start">
+                <div className="flex-shrink-0 mt-1">
+                  <Mascot 
+                    character={getMascotCharacter()} 
+                    expression={getMascotExpression()} 
+                    size="md" 
+                  />
+                </div>
+                {/* Speech Bubble */}
+                <div className="flex-1 relative bg-white border border-white/85 rounded-2xl rounded-tl-none p-4 shadow-sm text-charcoal text-xs leading-relaxed">
+                  <p className="font-semibold text-charcoal mb-2 leading-relaxed">
+                    {reinforcement?.reasoning}
+                  </p>
+                  <p className="font-bold text-primary-dark italic">
+                    {reinforcement?.encouragement}
                   </p>
                 </div>
               </div>
-
-              {/* Bullet reasons */}
-              <ul className="space-y-2.5 pt-2 border-t border-charcoal/5">
-                {reinforcement?.reasons.map((reason, index) => (
-                  <li key={index} className="flex gap-2.5 items-start text-xs text-charcoal/80">
-                    <span className="w-5 h-5 flex-shrink-0 rounded-full bg-primary/20 text-primary-dark flex items-center justify-center font-bold text-[10px] mt-0.5">
-                      ✓
-                    </span>
-                    <span className="leading-snug">{reason}</span>
-                  </li>
-                ))}
-              </ul>
             </div>
 
             {/* M4 Feedback Interface (interactive preview) */}
@@ -538,7 +566,7 @@ export default function NewDecisionPage() {
               <span className="text-[10px] font-semibold text-charcoal/40 uppercase tracking-wider block">
                 {feedbackSubmitted 
                   ? "Thanks! Munch is learning your tastes 🍀" 
-                  : "How do you feel about this pick?"}
+                  : (reinforcement?.follow_up_question || "How do you feel about this pick?")}
               </span>
               <div className="flex justify-center gap-4">
                 <button
@@ -594,8 +622,9 @@ export default function NewDecisionPage() {
             onClick={handlePickForMe}
             disabled={options.length < 2}
             className="w-full py-3.5 btn-clay-primary text-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-          >\n            <Sparkles className="w-5 h-5" />
-            Pick For Me
+          >
+            <Sparkles className="w-5 h-5" />
+            Let's find what feels right
           </button>
         )}
 
@@ -606,14 +635,14 @@ export default function NewDecisionPage() {
               className="flex-1 py-3 border-2 border-charcoal/10 rounded-2xl bg-white hover:bg-charcoal/5 active:bg-charcoal/10 text-charcoal font-semibold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer"
             >
               <RefreshCw className="w-4 h-4 animate-float-delayed" />
-              Try Again
+              Reflect again
             </button>
             <button
               onClick={handleFinish}
               disabled={savingState}
               className="flex-1 py-3 btn-clay-primary text-sm flex items-center justify-center gap-1 cursor-pointer disabled:opacity-50"
             >
-              {savingState ? 'Saving...' : 'Done'}
+              {savingState ? 'Saving...' : 'Carry this forward'}
               <Check className="w-4 h-4" />
             </button>
           </div>

@@ -15,8 +15,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "MunchPick 🍀 — AI-Powered Decision Companion",
-  description: "Stop overthinking! MunchPick picks the best option for you with AI-powered personalized suggestions and positive reinforcement.",
+  title: "Munch 🍀 — A Gentle Companion for Overthinking",
+  description: "Munch is a gentle four-leaf clover companion who helps you slow down, quiet the noise, and find the choices that feel right to you.",
   manifest: "/manifest.json",
 };
 

@@ -13,30 +13,30 @@ export default async function LandingPage() {
   const isLoggedIn = !!user
 
   const mascotTeam = [
-    { name: 'Munch 🍀', role: 'General Advisor', character: 'general' as const, bg: 'bg-white/60', description: 'Curbs general overthinking' },
-    { name: 'Chef Munch 🍕', role: 'Food Expert', character: 'chef' as const, bg: 'bg-primary/10', description: 'Decides meals & dinners' },
-    { name: 'Showtime Munch 🍿', role: 'Entertainment', character: 'showtime' as const, bg: 'bg-secondary/10', description: 'Picks movies & games' },
-    { name: 'Coach Munch 🏃‍♂️', role: 'Activities', character: 'coach' as const, bg: 'bg-yellow/10', description: 'Guides tasks & workouts' },
-    { name: 'Shopper Munch 🛍️', role: 'Shopping', character: 'shopper' as const, bg: 'bg-coral/10', description: 'Selects items & purchases' }
+    { name: 'Munch 🍀', role: 'Gentle Guide', character: 'general' as const, bg: 'bg-white/60', description: 'Quiets the noise in your mind' },
+    { name: 'Chef Munch 🍕', role: 'Food Companion', character: 'chef' as const, bg: 'bg-primary/10', description: 'Explores what you feel like eating' },
+    { name: 'Showtime Munch 🍿', role: 'Leisure Friend', character: 'showtime' as const, bg: 'bg-secondary/10', description: 'Finds a cozy way to unwind' },
+    { name: 'Coach Munch 🏃‍♂️', role: 'Cheerleader', character: 'coach' as const, bg: 'bg-yellow/10', description: 'Helps take the first gentle step' },
+    { name: 'Shopper Munch 🛍️', role: 'Shopping Buddy', character: 'shopper' as const, bg: 'bg-coral/10', description: 'Seeks what brings you comfort' }
   ]
 
   const testimonials = [
     {
-      quote: "My partner and I haven't argued about dinner once since using MunchPick! The positive reasons make us look forward to the choice.",
+      quote: "My partner and I used to worry about dinners. Now, sitting down with Munch helps us slow down and find what we both feel like having. It's brought so much peace to our kitchen.",
       author: "Chloe & David",
-      role: "Meal-fatigued Couple",
+      role: "Mealtime Overthinkers",
       stars: 5
     },
     {
-      quote: "I used to spend 45 minutes scrolling Netflix. Now Showtime Munch chooses in 3 seconds, and I feel completely satisfied with the pick.",
+      quote: "I used to spend an hour scrolling. Now, Showtime Munch helps me quiet the chatter and find the cozy evening I actually wanted.",
       author: "Marcus K.",
-      role: "Indecisive Cinephile",
+      role: "Movie Enthusiast",
       stars: 5
     },
     {
-      quote: "Deciding on study topics gave me major anxiety. letting Coach Munch pick my next task builds instant learning momentum.",
+      quote: "When study stress starts piling up, talking with Coach Munch helps me take a breath and pick a small starting point I'm comfortable with.",
       author: "Linnea S.",
-      role: "University Student",
+      role: "Student",
       stars: 5
     }
   ]
@@ -57,18 +57,18 @@ export default async function LandingPage() {
         <div className="inline-flex items-center gap-2 animate-float text-center">
           <span className="text-5xl">🍀</span>
           <span className="font-display text-4xl font-extrabold tracking-tight text-primary-dark">
-            MunchPick
+            Munch
           </span>
         </div>
 
         {/* Hero Section */}
         <div className="text-center space-y-4">
           <h1 className="font-display text-4xl sm:text-5xl font-black text-charcoal leading-tight">
-            Stop Overthinking.<br />
-            <span className="text-primary-dark">Start Choosing.</span>
+            Slow down.<br />
+            <span className="text-primary-dark">Find comfort in your choices.</span>
           </h1>
           <p className="text-sm sm:text-base text-charcoal/70 leading-relaxed max-w-sm mx-auto">
-            The AI-powered decision companion that picks for you, remembers your preferences, and reinforces confidence in your choices.
+            A gentle four-leaf clover companion that helps you understand your thoughts, listen to your feelings, and find comfort in where to begin.
           </p>
 
           <div className="pt-4 max-w-xs mx-auto">
@@ -77,7 +77,7 @@ export default async function LandingPage() {
                 href="/dashboard"
                 className="w-full py-3.5 px-6 btn-clay-primary text-sm flex items-center justify-center gap-2 cursor-pointer transition-all"
               >
-                Go to Dashboard
+                Go to my space
                 <ArrowRight className="w-4 h-4" />
               </Link>
             ) : (
@@ -86,14 +86,14 @@ export default async function LandingPage() {
                   href="/register"
                   className="w-full py-3.5 px-6 btn-clay-primary text-sm flex items-center justify-center gap-2 cursor-pointer transition-all"
                 >
-                  Start Choosing — It's Free
+                  Meet Munch 🍀
                   <ArrowRight className="w-4 h-4" />
                 </Link>
                 <Link
                   href="/login"
                   className="w-full py-3.5 px-6 border-2 border-charcoal/10 rounded-2xl bg-white hover:bg-charcoal/5 text-charcoal font-semibold text-sm flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                 >
-                  Log In to Your Account
+                  Log In
                   <ChevronRight className="w-4 h-4" />
                 </Link>
               </div>
@@ -108,7 +108,7 @@ export default async function LandingPage() {
               Meet the Munch Team
             </h3>
             <p className="text-3xs text-charcoal/50 uppercase tracking-widest font-bold">
-              Tailored guides for every dilemma
+              Gentle friends for every mood
             </p>
           </div>
 
@@ -135,7 +135,7 @@ export default async function LandingPage() {
         {/* How It Works Steps */}
         <div className="w-full space-y-5">
           <h3 className="font-display font-black text-xl text-charcoal text-center">
-            How MunchPick Works
+            How Munch Helps You
           </h3>
 
           <div className="space-y-4">
@@ -144,9 +144,9 @@ export default async function LandingPage() {
                 1
               </span>
               <div>
-                <h4 className="text-xs font-bold text-charcoal">Enter your choices</h4>
+                <h4 className="text-xs font-bold text-charcoal">Share your thoughts</h4>
                 <p className="text-2xs text-charcoal/60 leading-relaxed mt-0.5">
-                  Input options you're stuck between. Presets available to load quick food items instantly.
+                  Write down the paths you're stuck between. Take your time—there is never any rush.
                 </p>
               </div>
             </div>
@@ -156,9 +156,9 @@ export default async function LandingPage() {
                 2
               </span>
               <div>
-                <h4 className="text-xs font-bold text-charcoal">Smart weighted selection</h4>
+                <h4 className="text-xs font-bold text-charcoal">Reflect on what matters</h4>
                 <p className="text-2xs text-charcoal/60 leading-relaxed mt-0.5">
-                  Munch extracts tags and applies your learned preferences, adjusting probabilities dynamically.
+                  Munch notices what usually brings you comfort and gently points towards a warm path forward.
                 </p>
               </div>
             </div>
@@ -168,9 +168,9 @@ export default async function LandingPage() {
                 3
               </span>
               <div>
-                <h4 className="text-xs font-bold text-charcoal">Positive Reinforcement</h4>
+                <h4 className="text-xs font-bold text-charcoal">Find peace of mind</h4>
                 <p className="text-2xs text-charcoal/60 leading-relaxed mt-0.5">
-                  Receive 3-5 positive, custom bullet points explaining why the chosen pick is awesome. Zero regret!
+                  Receive a warm, thoughtful explanation of why this path makes sense, helping you quiet the chatter.
                 </p>
               </div>
             </div>
@@ -213,17 +213,17 @@ export default async function LandingPage() {
           </div>
           
           <h3 className="font-display text-lg font-black text-charcoal leading-tight">
-            Stop overanalyzing. Let Munch Pick.
+            Let's figure it out together.
           </h3>
           <p className="text-2xs text-charcoal/60 leading-normal max-w-xs mx-auto">
-            Create an account in 30 seconds and let our lucky clovers take the mental weight off your shoulders.
+            Munch is here to help you hear yourself more clearly. Quiet the overthinking, and take a gentle step forward today.
           </p>
           <div className="pt-2">
             <Link
               href={isLoggedIn ? "/dashboard" : "/register"}
               className="py-3 px-6 btn-clay-primary text-xs inline-flex items-center gap-2 cursor-pointer transition-all shadow-sm"
             >
-              Get Started for Free
+              Begin with Munch
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -231,7 +231,7 @@ export default async function LandingPage() {
 
         {/* Footer */}
         <footer className="w-full text-center text-3xs text-charcoal/40 pt-6 border-t border-charcoal/5">
-          MunchPick © {new Date().getFullYear()}. Built with love, clovers, and positive reinforcement.
+          Munch © {new Date().getFullYear()}. Built with love, clovers, and warm support.
         </footer>
       </div>
     </div>

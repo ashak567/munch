@@ -86,11 +86,11 @@ export default function RegisterPage() {
         <Link href="/" className="inline-flex items-center gap-2 mb-2">
           <span className="text-4xl animate-float">🍀</span>
           <span className="font-display text-3xl font-bold tracking-tight text-primary-dark">
-            MunchPick
+            Munch
           </span>
         </Link>
         <p className="text-sm text-charcoal/70">
-          Let's get you set up to start picking!
+          Let's get you set up to share your thoughts!
         </p>
       </div>
 
@@ -102,7 +102,7 @@ export default function RegisterPage() {
           <div className="flex-1">
             <h4 className="font-display font-bold text-sm text-charcoal">Munch says...</h4>
             <p className="text-xs text-charcoal/80 leading-snug">
-              "Indecision is just a phase! Create an account and let's cure decision fatigue together!"
+              "Create an account and let's start sharing reflections together! 🍀"
             </p>
           </div>
         </div>

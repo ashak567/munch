@@ -9,9 +9,9 @@ export default function BottomNav() {
   const pathname = usePathname()
 
   const navItems = [
-    { href: '/dashboard', label: 'Pick', icon: Sparkles },
-    { href: '/history', label: 'History', icon: History },
-    { href: '/insights', label: 'Insights', icon: BarChart3 },
+    { href: '/dashboard', label: 'Munch', icon: Sparkles },
+    { href: '/history', label: 'Journal', icon: History },
+    { href: '/insights', label: 'Reflections', icon: BarChart3 },
     { href: '/profile', label: 'Profile', icon: User },
   ]
 

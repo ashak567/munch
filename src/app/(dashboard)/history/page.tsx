@@ -127,7 +127,7 @@ export default function HistoryPage() {
     e.stopPropagation() // Don't trigger expand card
     if (deletingId) return
 
-    const confirmDelete = window.confirm("Are you sure you want to delete this decision from your history?")
+    const confirmDelete = window.confirm("Are you sure you want to delete this reflection from your history?")
     if (!confirmDelete) return
 
     setDeletingId(id)
@@ -188,10 +188,10 @@ export default function HistoryPage() {
       {/* Header */}
       <div>
         <h2 className="font-display font-extrabold text-2xl text-charcoal">
-          Decision History
+          Past Reflections
         </h2>
         <p className="text-2xs text-charcoal/60">
-          Scroll through your past picks and learnings ({total} total)
+          A gentle history of your choices and how they felt ({total} total)
         </p>
       </div>
 
@@ -207,7 +207,7 @@ export default function HistoryPage() {
         {loading && decisions.length === 0 ? (
           <div className="flex-grow flex flex-col items-center justify-center py-16 space-y-3">
             <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-            <span className="text-2xs text-charcoal/50">Retrieving past decisions...</span>
+            <span className="text-2xs text-charcoal/50">Retrieving past reflections...</span>
           </div>
         ) : decisions.length === 0 ? (
           /* Empty State */
@@ -224,15 +224,15 @@ export default function HistoryPage() {
                 <path d="M 48 53 Q 50 55 52 53" fill="none" stroke="#4A4A4A" strokeWidth="1.5" strokeLinecap="round" />
               </svg>
             </div>
-            <h3 className="font-display text-lg font-bold text-charcoal mb-2">No history yet!</h3>
+            <h3 className="font-display text-lg font-bold text-charcoal mb-2">No reflections yet</h3>
             <p className="text-xs text-charcoal/50 max-w-xs leading-relaxed mb-6">
-              Munch is ready to make decisions and remember your choices. Let's make one together!
+              Munch is here to listen and help quiet the chatter. Let's share our first thought together.
             </p>
             <button
               onClick={() => router.push('/dashboard/new')}
               className="px-6 py-3 btn-clay-primary text-xs flex items-center justify-center gap-2 cursor-pointer transition-all"
             >
-              Start New Decision
+              Share My Thoughts
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -314,7 +314,7 @@ export default function HistoryPage() {
                             <div className="bg-white/80 border border-white rounded-xl p-3 flex gap-2.5 items-start">
                               <span className="text-base mt-0.5">🍀</span>
                               <div>
-                                <h5 className="text-[10px] font-bold uppercase tracking-wider text-charcoal/50">Munch's Advice</h5>
+                                <h5 className="text-[10px] font-bold uppercase tracking-wider text-charcoal/50">Munch's Reflections</h5>
                                 <p className="text-xs text-charcoal/80 italic mt-0.5">
                                   "{item.reinforcementMessage}"
                                 </p>
@@ -349,7 +349,11 @@ export default function HistoryPage() {
                                       </span>
                                     </div>
                                     <div className="flex items-center gap-1.5 text-[10px] font-bold text-charcoal/40">
-                                      <span>Weight: {Number(opt.weight).toFixed(1)}</span>
+                                      {opt.isSelected && (
+                                        <span className="bg-primary/20 text-primary-dark px-1.5 py-0.5 rounded text-[9px]">
+                                          Chosen path
+                                        </span>
+                                      )}
                                       {opt.tags && opt.tags.length > 0 && (
                                         <span className="hidden sm:inline bg-charcoal/5 px-1.5 py-0.5 rounded text-[9px]">
                                           {opt.tags.join(', ')}
@@ -374,12 +378,12 @@ export default function HistoryPage() {
               {loadingMore && (
                 <div className="flex items-center gap-2 text-3xs text-charcoal/40">
                   <div className="w-3.5 h-3.5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                  <span>Loading older decisions...</span>
+                  <span>Loading older reflections...</span>
                 </div>
               )}
               {!hasMore && decisions.length > 0 && (
                 <span className="text-3xs text-charcoal/30 font-semibold tracking-wider uppercase">
-                  All decisions loaded 🍀
+                  All reflections loaded 🍀
                 </span>
               )}
             </div>
@@ -393,7 +397,7 @@ export default function HistoryPage() {
           onClick={() => router.push('/dashboard')}
           className="w-full py-3.5 border-2 border-charcoal/10 rounded-2xl bg-white hover:bg-charcoal/5 text-charcoal font-semibold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
         >
-          Back to Dashboard
+          Back to my space
         </button>
       </div>
     </div>

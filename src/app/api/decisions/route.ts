@@ -112,8 +112,52 @@ export async function POST(request: NextRequest) {
 
     const selectedOption = optionsWithWeights[selectedIdx]
 
-    // 6. AI Positive Reinforcement Generation (Task 3.5)
-    const reinforcement = await generateReinforcement(selectedOption.text, category)
+    // Fetch user's recent decisions to provide context for the personality engine
+    const { data: recentDecisions } = await supabase
+      .from('decisions')
+      .select('id, selected_option, category')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false })
+      .limit(5)
+
+    const pastDecisionsText = recentDecisions
+      ?.map((d) => `Option "${d.selected_option}" in ${d.category}`)
+      .join(', ') || ''
+
+    // Fetch user feedback on recent decisions
+    let feedbackHistoryText = ''
+    if (recentDecisions && recentDecisions.length > 0) {
+      const { data: recentFeedback } = await supabase
+        .from('feedback')
+        .select('decision_id, rating')
+        .in('decision_id', recentDecisions.map((d) => d.id))
+
+      if (recentFeedback && recentFeedback.length > 0) {
+        feedbackHistoryText = recentFeedback
+          .map((f) => {
+            const dec = recentDecisions.find((d) => d.id === f.decision_id)
+            return `User rated the pick "${dec?.selected_option}" as "${f.rating}"`
+          })
+          .join(', ')
+      }
+    }
+
+    const userPreferencesText = preferencesList
+      .map((p) => `tag: "${p.tag}" (score: ${p.score})`)
+      .join(', ')
+
+    // Parse optional context/mood from request body
+    const emotionalState = body.emotionalState || ''
+    const currentContext = body.currentContext || ''
+
+    // 6. AI Positive Reinforcement Generation (Munch Personality Engine)
+    const reinforcement = await generateReinforcement(selectedOption.text, category, {
+      emotionalState,
+      currentContext,
+      userPreferences: userPreferencesText,
+      pastDecisions: pastDecisionsText,
+      feedbackHistory: feedbackHistoryText,
+    })
 
     // 7. Save Decision to Database (Task 3.3)
     // Insert decision record
@@ -123,7 +167,10 @@ export async function POST(request: NextRequest) {
         user_id: user.id,
         category: category,
         selected_option: selectedOption.text,
-        reinforcement_message: reinforcement.message,
+        reinforcement_message: `${reinforcement.reasoning} ${reinforcement.encouragement}`,
+        reasoning: reinforcement.reasoning,
+        encouragement: reinforcement.encouragement,
+        follow_up_question: reinforcement.follow_up_question,
       })
       .select()
       .single()
@@ -163,8 +210,13 @@ export async function POST(request: NextRequest) {
         tags: selectedOption.tags,
       },
       reinforcement: {
-        reasons: reinforcement.reasons,
-        message: reinforcement.message,
+        selected_option: reinforcement.selected_option,
+        reasoning: reinforcement.reasoning,
+        encouragement: reinforcement.encouragement,
+        follow_up_question: reinforcement.follow_up_question,
+        // Compatibility fields for any legacy frontend code
+        reasons: [reinforcement.reasoning],
+        message: reinforcement.encouragement,
       },
     })
   } catch (error: any) {
@@ -200,7 +252,7 @@ export async function GET(request: NextRequest) {
     // 3. Fetch decisions paginated
     const { data: decisions, error: decisionsError, count } = await supabase
       .from('decisions')
-      .select('id, category, selected_option, reinforcement_message, created_at', { count: 'exact' })
+      .select('id, category, selected_option, reinforcement_message, reasoning, encouragement, follow_up_question, created_at', { count: 'exact' })
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
@@ -267,6 +319,9 @@ export async function GET(request: NextRequest) {
       category: d.category,
       selectedOption: d.selected_option,
       reinforcementMessage: d.reinforcement_message,
+      reasoning: d.reasoning,
+      encouragement: d.encouragement,
+      followUpQuestion: d.follow_up_question,
       createdAt: d.created_at,
       options: optionsMap[d.id] || [],
       rating: feedbackMap[d.id] || null,

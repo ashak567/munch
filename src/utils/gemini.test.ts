@@ -66,17 +66,18 @@ describe('Gemini Integration & Fallback Tests', () => {
       delete process.env.GEMINI_API_KEY
       const result = await generateReinforcement('Fresh Spicy Tuna Sushi', 'Food')
       
-      expect(result.reasons).toHaveLength(3)
-      expect(result.message).toContain('🍕')
-      expect(result.reasons[0]).toContain('satisfies your hunger')
+      expect(result.reasoning).toContain('warm is a wonderful place')
+      expect(result.encouragement).toContain('🍕')
+      expect(result.follow_up_question).toBeDefined()
     })
 
     it('should generate fallback reinforcement message and reasons for Other category', async () => {
       delete process.env.GEMINI_API_KEY
       const result = await generateReinforcement('Fix chair', 'Other')
       
-      expect(result.reasons).toHaveLength(3)
-      expect(result.message).toContain('🍀')
+      expect(result.reasoning).toContain('good place to begin')
+      expect(result.encouragement).toContain('🍀')
+      expect(result.follow_up_question).toBeDefined()
     })
   })
 
@@ -110,8 +111,10 @@ describe('Gemini Integration & Fallback Tests', () => {
       process.env.GEMINI_API_KEY = 'test_key'
 
       const mockResult = {
-        reasons: ['Reason one', 'Reason two'],
-        message: 'Supportive statement! 🎉'
+        selected_option: 'Buy shoes',
+        reasoning: 'Reason one and Reason two.',
+        encouragement: 'Supportive statement! 🎉',
+        follow_up_question: 'How do you feel?'
       }
 
       mockGenerateContent.mockResolvedValueOnce({
@@ -122,8 +125,9 @@ describe('Gemini Integration & Fallback Tests', () => {
 
       const result = await generateReinforcement('Buy shoes', 'Shopping')
 
-      expect(result.reasons).toHaveLength(2)
-      expect(result.message).toContain('🎉')
+      expect(result.reasoning).toBe('Reason one and Reason two.')
+      expect(result.encouragement).toContain('🎉')
+      expect(result.follow_up_question).toBe('How do you feel?')
       expect(mockGenerateContent).toHaveBeenCalledTimes(1)
     })
 

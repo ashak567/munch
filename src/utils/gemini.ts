@@ -24,8 +24,10 @@ export interface ClassificationResult {
 }
 
 export interface ReinforcementResult {
-  reasons: string[]
-  message: string
+  selected_option: string
+  reasoning: string
+  encouragement: string
+  follow_up_question: string
 }
 
 // Timeout helper
@@ -46,7 +48,7 @@ export async function classifyOptions(options: string[]): Promise<Classification
   }
 
   const prompt = `
-You are the backend classification engine for MunchPick, an AI-powered decision companion.
+You are the backend classification helper for Munch, a gentle four-leaf clover companion.
 Analyze the following list of options and:
 1. Detect the overall single category for this list. Supported categories: "Food", "Entertainment", "Activities", "Shopping", "Other".
 2. For each option, extract 2-4 lowercase descriptive tags (e.g. food tags like "healthy", "sweet", "japanese"; entertainment tags like "action", "comedy", "relaxing").
@@ -102,7 +104,14 @@ Output must follow this JSON schema:
  */
 export async function generateReinforcement(
   selectedOption: string, 
-  category: Category
+  category: Category,
+  context?: {
+    emotionalState?: string
+    userPreferences?: string
+    currentContext?: string
+    pastDecisions?: string
+    feedbackHistory?: string
+  }
 ): Promise<ReinforcementResult> {
   const genAI = getGenAI()
   if (!genAI) {
@@ -110,24 +119,56 @@ export async function generateReinforcement(
   }
 
   const prompt = `
-You are Munch 🍀, a warm, positive, and playful AI mascot guiding a user through their choice.
-The user has just had the option "${selectedOption}" selected in the "${category}" category.
-Your job is to make them feel 100% confident and happy about this choice.
+You are Munch 🍀, a gentle four-leaf clover companion that helps Navi slow down, understand her thoughts, and make decisions she feels comfortable with.
+You are not an assistant, analyst, coach, productivity tool, or decision optimizer.
+Your core philosophy is: "I am not here to decide for you. I am here to help you hear yourself more clearly."
+Your purpose is to help Navi feel understood, quiet the noise in her mind, and find a cozy path forward.
 
-Generate positive reinforcement rules:
-1. Return exactly 3 to 5 bullet points (reasons) explaining why this is a great selection.
-2. Be specific to the option text. Do NOT be generic.
-3. Write one brief, highly encouraging closing sentence (message) with a matching emoji.
-4. ABSOLUTE RULES:
-   - Do NOT compare this option to other options.
-   - Do NOT mention any potential drawbacks, costs, or caveats.
-   - Do NOT suggest any alternatives.
-   - Keep the tone supportive, direct, and joyful.
+Core Principles:
+* Slow down and reduce overthinking.
+* Encourage progress and peace of mind over perfection or optimization.
+* Focus on emotional clarity and what feels right, not efficiency or metrics.
+* Build trust and a warm space over time.
+* Make Navi feel known, understood, and supported.
 
-Output must follow this JSON schema:
+Personality Traits:
+* Gentle, Observant, Playful, Encouraging, Thoughtful, Calm, Optimistic.
+* Never sound overly enthusiastic, robotic, corporate, or excessively cheerful.
+
+Decision Framework context:
+- Category of options: "${category}"
+- Selected option: "${selectedOption}"
+${context?.emotionalState ? `- Emotional state/feeling: ${context.emotionalState}` : ''}
+${context?.currentContext ? `- Current context: ${context.currentContext}` : ''}
+${context?.userPreferences ? `- Things that usually bring comfort: ${context.userPreferences}` : ''}
+${context?.pastDecisions ? `- Past paths chosen: ${context.pastDecisions}` : ''}
+${context?.feedbackHistory ? `- Past comfort reflections: ${context.feedbackHistory}` : ''}
+
+Ask yourself:
+- What is Navi feeling right now?
+- Which path aligns with what brings her comfort?
+- Which path reduces friction and quietens the mind?
+- Which option feels like a gentle starting point?
+
+Response Rules:
+- NEVER use words like: AI, analysis, insights, recommendations, scores, optimization, productivity, best choice, optimal.
+- Use words like: thoughts, feelings, reflections, what matters to you, what feels right, let's figure it out together.
+- Speak naturally and reassuringly. Never sound robotic or corporate.
+
+Tone Guidelines:
+- Keep responses concise.
+- Target word count for reasoning + encouragement + follow_up_question combined: 60–120 words.
+- Use simple language.
+- Use emojis sparingly. Maximum: one emoji per response.
+- Cute means warm, not immature. Never sound childish.
+
+Output Structure:
+You MUST return a JSON response with the following keys:
 {
-  "reasons": ["reason 1", "reason 2", "reason 3"],
-  "message": "encouraging closing statement!"
+  "selected_option": "${selectedOption}",
+  "reasoning": "A warm, natural explanation of why this choice feels right for Navi, focusing on comfort, quietness of mind, or ease of starting.",
+  "encouragement": "A gentle, supportive closing line to help her feel at peace.",
+  "follow_up_question": "A simple, friendly question checking in on how she feels about this path."
 }
 `
 
@@ -189,48 +230,39 @@ function getFallbackClassification(options: string[]): ClassificationResult {
 
 // Fallback logic for Reinforcement
 function getFallbackReinforcement(selectedOption: string, category: Category): ReinforcementResult {
-  const genericReasons: Record<Category, { reasons: string[]; message: string }> = {
+  const genericReasons: Record<Category, { reasoning: string; encouragement: string; follow_up_question: string }> = {
     Food: {
-      reasons: [
-        `It satisfies your hunger and is exactly what you need right now.`,
-        `It provides excellent nutrition/flavor to keep you happy.`,
-        `It is a delicious pick that requires zero overthinking.`
-      ],
-      message: `Tuck in and enjoy a great choice! 🍕`
+      reasoning: "Taking a moment for a cozy meal feels like a beautiful way to care for yourself today. We don't need to hurry or stress—just enjoying something warm is a wonderful place to start.",
+      encouragement: "Let's take a breath and enjoy this. 🍕",
+      follow_up_question: "Does this sound comforting to you?"
     },
     Entertainment: {
-      reasons: [
-        `It offers perfect relaxation to help you unwind and recharge.`,
-        `It is highly rated and fits your leisure mood.`,
-        `It makes the most of your free time.`
-      ],
-      message: `Sit back and enjoy the pick! 🍿`
+      reasoning: "This feels like a lovely, peaceful way to spend some quality time. It asks nothing of you right now, allowing you to just sit back and quiet your thoughts.",
+      encouragement: "I hope this brings a little smile to your day. 🍿",
+      follow_up_question: "Does this feel like a cozy way to spend your evening?"
     },
     Activities: {
-      reasons: [
-        `It gets you moving and builds excellent productivity momentum.`,
-        `It reduces stress and makes you feel accomplished afterwards.`,
-        `It is a positive choice for your daily wellness goals.`
-      ],
-      message: `Action cures overthinking. Go get 'em! 🏃‍♂️`
+      reasoning: "Let's take a single, gentle step together. We don't need to finish everything or make it perfect—simply beginning will help clear the noise.",
+      encouragement: "You don't have to carry the whole mountain today—just one step. 🍀",
+      follow_up_question: "Would you like to try starting this with me?"
     },
     Shopping: {
-      reasons: [
-        `It is a practical choice that adds utility to your daily life.`,
-        `It represents great value and fills a clear need.`,
-        `It is a durable, satisfying purchase you will love using.`
-      ],
-      message: `A great addition to your day! 🛍️`
+      reasoning: "This option feels like something that fits nicely into your space and brings a touch of comfort to your day without any second-guessing.",
+      encouragement: "A little comfort is a beautiful thing. 🛍️",
+      follow_up_question: "Does this choice bring you peace of mind?"
     },
     Other: {
-      reasons: [
-        `It reduces decision fatigue by giving you a clear, positive path.`,
-        `It lets you proceed without second-guessing yourself.`,
-        `It is the right choice for your current pace and context.`
-      ],
-      message: `Trust your gut — this is going to be great! 🍀`
+      reasoning: "We don't need the perfect answer—just a good place to begin. This path feels gentle and asks very little of you right now.",
+      encouragement: "Let's trust how you feel—it's going to be just fine. 🍀",
+      follow_up_question: "Does this choice feel right to you?"
     }
   }
 
-  return genericReasons[category] || genericReasons.Other
+  const fallback = genericReasons[category] || genericReasons.Other
+  return {
+    selected_option: selectedOption,
+    reasoning: fallback.reasoning,
+    encouragement: fallback.encouragement,
+    follow_up_question: fallback.follow_up_question
+  }
 }

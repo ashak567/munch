@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { logout } from '@/app/auth/actions'
-import { LogOut, User, Mail, ShieldAlert, Award } from 'lucide-react'
+import { LogOut, User, Mail, ShieldAlert, Award, Edit3, Save, X } from 'lucide-react'
 
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null)
@@ -11,17 +11,73 @@ export default function ProfilePage() {
   const [showConfirm, setShowConfirm] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
 
+  // Stats and editing states
+  const [stats, setStats] = useState({ totalDecisions: 0, favoriteCategory: 'None yet' })
+  const [isEditing, setIsEditing] = useState(false)
+  const [editName, setEditName] = useState('')
+  const [updating, setUpdating] = useState(false)
+  const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null)
+
   useEffect(() => {
-    async function loadUser() {
+    async function loadProfile() {
       const supabase = createClient()
       const {
         data: { user },
       } = await supabase.auth.getUser()
       setUser(user)
+      if (user) {
+        setEditName(user.user_metadata?.full_name || user.email?.split('@')[0] || '')
+      }
+
+      try {
+        const res = await fetch('/api/preferences')
+        if (res.ok) {
+          const statsData = await res.json()
+          let favorite = 'None yet'
+          let maxCount = 0
+          if (statsData.categoryDistribution) {
+            Object.entries(statsData.categoryDistribution).forEach(([cat, count]) => {
+              if ((count as number) > maxCount) {
+                maxCount = count as number
+                favorite = cat
+              }
+            })
+          }
+          setStats({
+            totalDecisions: statsData.totalDecisions || 0,
+            favoriteCategory: favorite
+          })
+        }
+      } catch (err) {
+        console.error('Failed to load stats', err)
+      }
+
       setLoading(false)
     }
-    loadUser()
+    loadProfile()
   }, [])
+
+  const handleSaveName = async () => {
+    if (!editName.trim()) return
+    setUpdating(true)
+    setFeedbackMsg(null)
+    try {
+      const supabase = createClient()
+      const { data, error } = await supabase.auth.updateUser({
+        data: { full_name: editName.trim() }
+      })
+      if (error) throw error
+      setUser(data.user)
+      setIsEditing(false)
+      setFeedbackMsg('Name updated successfully!')
+      setTimeout(() => setFeedbackMsg(null), 3000)
+    } catch (err: any) {
+      console.error(err)
+      setFeedbackMsg(err.message || 'Failed to update name')
+    } finally {
+      setUpdating(false)
+    }
+  }
 
   const handleLogout = async () => {
     setLoggingOut(true)
@@ -68,13 +124,68 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        <h2 className="font-display text-2xl font-bold text-charcoal mb-1">
-          {userName}
-        </h2>
+        {/* Editable Name Field */}
+        <div className="w-full max-w-xs mb-1">
+          {isEditing ? (
+            <div className="flex items-center gap-2 mb-2">
+              <input
+                type="text"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder="Your name"
+                disabled={updating}
+                className="flex-grow px-3 py-1.5 border border-charcoal/20 rounded-xl bg-white/80 focus:outline-none focus:ring-2 focus:ring-primary/40 text-center text-sm font-semibold text-charcoal"
+              />
+              <button
+                onClick={handleSaveName}
+                disabled={updating || !editName.trim()}
+                className="p-2 bg-primary hover:bg-primary-dark text-primary-dark border border-primary-dark/30 rounded-xl cursor-pointer disabled:opacity-50"
+                title="Save name"
+              >
+                <Save className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => {
+                  setEditName(userName)
+                  setIsEditing(false)
+                }}
+                disabled={updating}
+                className="p-2 bg-white/80 hover:bg-charcoal/5 border border-charcoal/10 text-charcoal/70 rounded-xl cursor-pointer"
+                title="Cancel"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-2 mb-2 group">
+              <h2 className="font-display text-2xl font-bold text-charcoal">
+                {userName}
+              </h2>
+              <button
+                onClick={() => setIsEditing(true)}
+                className="p-1 rounded-lg text-charcoal/40 hover:text-charcoal hover:bg-charcoal/5 transition-colors cursor-pointer"
+                title="Edit name"
+              >
+                <Edit3 className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+        </div>
+
         <div className="flex items-center gap-1.5 text-xs text-charcoal/60 mb-6 justify-center">
           <Mail className="w-3.5 h-3.5" />
           <span>{userEmail}</span>
         </div>
+
+        {feedbackMsg && (
+          <div className={`text-2xs font-bold px-3 py-1.5 rounded-xl mb-4 border ${
+            feedbackMsg.includes('failed') || feedbackMsg.includes('Failed')
+              ? 'bg-coral/10 border-coral-dark/20 text-coral-dark'
+              : 'bg-primary/20 border-primary-dark/20 text-primary-dark'
+          }`}>
+            {feedbackMsg}
+          </div>
+        )}
 
         {/* Action Buttons */}
         <button
@@ -86,18 +197,18 @@ export default function ProfilePage() {
         </button>
       </div>
 
-      {/* Preferences Placeholder / Account Info */}
+      {/* Preferences / Account Info */}
       <div className="glass-card rounded-2xl p-5 border border-white/50 text-xs text-charcoal/70 space-y-3">
         <div className="flex justify-between items-center pb-2 border-b border-charcoal/10 font-bold text-charcoal">
           <span>ACCOUNT STATS</span>
         </div>
         <div className="flex justify-between">
           <span>Decisions made</span>
-          <span className="font-bold text-charcoal">0</span>
+          <span className="font-bold text-charcoal">{stats.totalDecisions}</span>
         </div>
         <div className="flex justify-between">
           <span>Favorite Category</span>
-          <span className="font-bold text-charcoal">None yet</span>
+          <span className="font-bold text-charcoal capitalize">{stats.favoriteCategory}</span>
         </div>
         <div className="flex justify-between">
           <span>Member since</span>

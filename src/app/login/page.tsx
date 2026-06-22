@@ -86,7 +86,7 @@ function LoginForm() {
         <div className="flex-1">
           <h4 className="font-display font-bold text-sm text-charcoal">Welcome back!</h4>
           <p className="text-xs text-charcoal/80 leading-snug">
-            "Ready to stop overthinking and start doing? Log in and let me pick!"
+            "Ready to quiet the noise and sit with your thoughts? Let's take a breath together."
           </p>
         </div>
       </div>
@@ -227,11 +227,11 @@ export default function LoginPage() {
         <Link href="/" className="inline-flex items-center gap-2 mb-2">
           <span className="text-4xl animate-float">🍀</span>
           <span className="font-display text-3xl font-bold tracking-tight text-primary-dark">
-            MunchPick
+            Munch
           </span>
         </Link>
         <p className="text-sm text-charcoal/70">
-          Sign in to your decision companion!
+          Sign in to find a little clarity with Munch 🍀
         </p>
       </div>
 

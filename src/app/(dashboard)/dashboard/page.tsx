@@ -20,7 +20,7 @@ export default async function DashboardPage() {
           Hello, {userName}!
         </h1>
         <p className="text-sm text-charcoal/60 mt-1">
-          Stop overthinking. Let's make some choices today!
+          Take a breath. Let's find what feels right today.
         </p>
       </div>
 
@@ -34,10 +34,10 @@ export default async function DashboardPage() {
         <Mascot character="general" expression="happy" size="xl" className="mb-4" />
 
         <h3 className="font-display font-bold text-xl text-charcoal mb-2">
-          Ready to decide?
+          What is on your mind?
         </h3>
         <p className="text-xs text-charcoal/70 leading-relaxed mb-6">
-          Got options? Tell me what you're stuck between, and I'll pick the best choice for you with absolute confidence!
+          Stuck between a few options? Share them with me, and we'll figure out what feels best together.
         </p>
 
         {/* Start Decision Button */}
@@ -46,7 +46,7 @@ export default async function DashboardPage() {
           className="w-full py-3 px-6 btn-clay-primary text-sm flex items-center justify-center gap-2 cursor-pointer transition-all duration-200"
         >
           <PlusCircle className="w-5 h-5" />
-          New Decision
+          Share My Thoughts
         </Link>
       </div>
 
@@ -59,7 +59,7 @@ export default async function DashboardPage() {
           <div className="p-2 rounded-xl bg-secondary/30 text-secondary-dark">
             <History className="w-5 h-5" />
           </div>
-          <span className="text-xs font-semibold text-charcoal">View History</span>
+          <span className="text-xs font-semibold text-charcoal">Past Reflections</span>
         </Link>
 
         <Link
@@ -69,7 +69,7 @@ export default async function DashboardPage() {
           <div className="p-2 rounded-xl bg-primary/30 text-primary-dark">
             <Compass className="w-5 h-5" />
           </div>
-          <span className="text-xs font-semibold text-charcoal">Quick Dinner Pick</span>
+          <span className="text-xs font-semibold text-charcoal">Cozy Meal Thoughts</span>
         </Link>
       </div>
     </div>

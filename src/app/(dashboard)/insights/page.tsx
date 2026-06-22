@@ -7,9 +7,6 @@ import {
   Sparkles, 
   ArrowRight,
   TrendingUp,
-  Heart,
-  Smile,
-  Meh,
   Unlock,
   AlertTriangle
 } from 'lucide-react'
@@ -54,13 +51,13 @@ export default function InsightsPage() {
         setLoading(true)
         const res = await fetch('/api/preferences')
         if (!res.ok) {
-          throw new Error('Failed to load preferences statistics')
+          throw new Error('Failed to load reflections statistics')
         }
         const parsed = await res.json()
         setData(parsed)
       } catch (err: any) {
         console.error(err)
-        setErrorMsg(err.message || 'Unable to retrieve insights.')
+        setErrorMsg(err.message || 'Unable to retrieve reflections.')
       } finally {
         setLoading(false)
       }
@@ -73,7 +70,7 @@ export default function InsightsPage() {
     return (
       <div className="flex-grow flex flex-col items-center justify-center py-16 space-y-3">
         <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-        <span className="text-2xs text-charcoal/50">Analyzing decision patterns...</span>
+        <span className="text-2xs text-charcoal/50">Reflecting on your thoughts...</span>
       </div>
     )
   }
@@ -83,7 +80,7 @@ export default function InsightsPage() {
       <div className="flex-grow flex flex-col items-center justify-center text-center p-4">
         <AlertTriangle className="w-10 h-10 text-red-500 mb-2" />
         <p className="text-xs text-charcoal/60">
-          {errorMsg || 'Failed to load insights. Please try again.'}
+          {errorMsg || "Unable to load reflections right now. Let's try again in a bit."}
         </p>
       </div>
     )
@@ -98,10 +95,10 @@ export default function InsightsPage() {
       <div className="flex-grow flex flex-col justify-between h-full space-y-6">
         <div>
           <h2 className="font-display font-extrabold text-2xl text-charcoal">
-            Personal Insights
+            My Reflections
           </h2>
           <p className="text-2xs text-charcoal/60">
-            Locked — Munch is still studying your preferences
+            A quiet space — Munch is still listening to your thoughts
           </p>
         </div>
 
@@ -126,17 +123,17 @@ export default function InsightsPage() {
           </div>
 
           <h3 className="font-display text-lg font-bold text-charcoal mb-2">
-            Munch needs more choices!
+            Let's share a few more reflections!
           </h3>
           <p className="text-xs text-charcoal/50 max-w-xs leading-relaxed mb-6">
-            Munch requires at least <strong>5 decisions</strong> to analyze tag preferences and map your categories. Make a few more decisions to unlock!
+            Munch needs to sit with you through at least <strong>5 decisions</strong> to start noticing patterns in what feels comfortable to you.
           </p>
 
           {/* Progress bar */}
           <div className="w-full max-w-xs space-y-1.5 mb-8">
             <div className="flex justify-between text-3xs font-black tracking-wider text-charcoal/40 uppercase">
-              <span>UNLOCKED PROGRESS</span>
-              <span>{totalDecisions} / 5 DECISIONS</span>
+              <span>REFLECTIONS GATHERED</span>
+              <span>{totalDecisions} / 5 REFLECTIONS</span>
             </div>
             <div className="h-3 w-full bg-charcoal/5 border border-charcoal/10 rounded-full overflow-hidden p-0.5">
               <div 
@@ -150,7 +147,7 @@ export default function InsightsPage() {
             onClick={() => router.push('/dashboard/new')}
             className="px-6 py-3.5 btn-clay-primary text-xs flex items-center justify-center gap-2 cursor-pointer transition-all shadow-sm"
           >
-            Create a Decision
+            Share My Thoughts
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
@@ -160,7 +157,7 @@ export default function InsightsPage() {
             onClick={() => router.push('/dashboard')}
             className="w-full py-3.5 border-2 border-charcoal/10 rounded-2xl bg-white hover:bg-charcoal/5 text-charcoal font-semibold text-sm transition-all cursor-pointer"
           >
-            Back to Dashboard
+            Back to my space
           </button>
         </div>
       </div>
@@ -179,10 +176,10 @@ export default function InsightsPage() {
       {/* Header */}
       <div>
         <h2 className="font-display font-extrabold text-2xl text-charcoal">
-          Personal Insights
+          My Reflections
         </h2>
         <p className="text-2xs text-charcoal/60 font-semibold uppercase tracking-wider text-primary-dark">
-          Analyzing {totalDecisions} decisions 🍀
+          Sitting with {totalDecisions} of your thoughts 🍀
         </p>
       </div>
 
@@ -193,7 +190,7 @@ export default function InsightsPage() {
         <div className="glass-card rounded-2xl p-4 border border-white/50 space-y-3">
           <div className="flex items-center gap-2 text-3xs font-black tracking-widest text-charcoal/40 uppercase">
             <BarChart3 className="w-3.5 h-3.5" />
-            Category Distribution
+            What occupies your mind
           </div>
           
           <div className="space-y-2.5">
@@ -209,7 +206,7 @@ export default function InsightsPage() {
                       <span>{style.emoji}</span>
                       <span>{category}</span>
                     </span>
-                    <span className="text-charcoal/50 text-[10px]">{count} picks</span>
+                    <span className="text-charcoal/50 text-[10px]">{count} thoughts</span>
                   </div>
                   <div className="h-4 w-full bg-charcoal/5 border border-charcoal/5 rounded-full overflow-hidden p-0.5 relative">
                     <div 
@@ -227,12 +224,12 @@ export default function InsightsPage() {
         <div className="glass-card rounded-2xl p-4 border border-white/50 space-y-3">
           <div className="flex items-center gap-2 text-3xs font-black tracking-widest text-charcoal/40 uppercase">
             <TrendingUp className="w-3.5 h-3.5" />
-            Decision Satisfaction
+            How your choices felt
           </div>
 
           {totalRatings === 0 ? (
             <p className="text-3xs text-charcoal/40 text-center italic py-2">
-              Leave feedback on your decisions to see satisfaction insights!
+              Share how you felt after choosing to see your reflections here.
             </p>
           ) : (
             <div className="space-y-3">
@@ -241,7 +238,7 @@ export default function InsightsPage() {
                 {lovePct > 0 && (
                   <div \n                    className="h-full bg-primary first:rounded-l-full last:rounded-r-full shadow-inner flex items-center justify-center text-[10px] font-black text-primary-dark"
                     style={{ width: `${lovePct}%` }}
-                    title={`Loved: ${satisfactionBreakdown.love}`}
+                    title={`Comfortable: ${satisfactionBreakdown.love}`}
                   >
                     ❤️
                   </div>
@@ -250,7 +247,7 @@ export default function InsightsPage() {
                   <div 
                     className="h-full bg-yellow first:rounded-l-full last:rounded-r-full shadow-inner flex items-center justify-center text-[10px] font-black text-yellow-700"
                     style={{ width: `${okayPct}%` }}
-                    title={`Okay: ${satisfactionBreakdown.okay}`}
+                    title={`Neutral: ${satisfactionBreakdown.okay}`}
                   >
                     😊
                   </div>
@@ -259,7 +256,7 @@ export default function InsightsPage() {
                   <div 
                     className="h-full bg-coral first:rounded-l-full last:rounded-r-full shadow-inner flex items-center justify-center text-[10px] font-black text-coral-dark"
                     style={{ width: `${mehPct}%` }}
-                    title={`Meh: ${satisfactionBreakdown.meh}`}
+                    title={`Unsure: ${satisfactionBreakdown.meh}`}
                   >
                     😕
                   </div>
@@ -270,15 +267,15 @@ export default function InsightsPage() {
               <div className="flex justify-around items-center pt-1 text-2xs font-semibold text-charcoal">
                 <div className="flex items-center gap-1.5">
                   <span className="text-[10px] p-0.5 rounded-full bg-primary/20">❤️</span>
-                  <span>Loved: {lovePct.toFixed(0)}%</span>
+                  <span>Comfortable: {lovePct.toFixed(0)}%</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="text-[10px] p-0.5 rounded-full bg-yellow/20">😊</span>
-                  <span>Okay: {okayPct.toFixed(0)}%</span>
+                  <span>Neutral: {okayPct.toFixed(0)}%</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <span className="text-[10px] p-0.5 rounded-full bg-coral/20">😕</span>
-                  <span>Meh: {mehPct.toFixed(0)}%</span>
+                  <span>Unsure: {mehPct.toFixed(0)}%</span>
                 </div>
               </div>
             </div>
@@ -289,19 +286,18 @@ export default function InsightsPage() {
         <div className="glass-card rounded-2xl p-4 border border-white/50 space-y-3">
           <div className="flex items-center gap-2 text-3xs font-black tracking-widest text-charcoal/40 uppercase">
             <Sparkles className="w-3.5 h-3.5" />
-            AI Preference Learned Tags
+            Things you are drawn to
           </div>
 
           {preferences.length === 0 ? (
             <p className="text-3xs text-charcoal/40 text-center italic py-4">
-              Munch hasn't registered preference tags yet. Leave ratings on decisions to build tag scores!
+              Munch is still learning what details bring you comfort. Share a few reflections to begin.
             </p>
           ) : (
             <div className="flex flex-wrap gap-2 pt-1">
               {preferences.map((pref, index) => {
                 const style = CATEGORY_STYLE[pref.category] || CATEGORY_STYLE.Other
-                const isPositive = pref.score > 0
-                const formattedScore = `${isPositive ? '+' : ''}${Number(pref.score).toFixed(1)}`
+                const formattedScore = pref.score > 1 ? 'Feels comforting' : pref.score > 0 ? 'Leaning towards' : pref.score < 0 ? 'Usually avoid' : 'Neutral'
 
                 return (
                   <div
@@ -333,7 +329,7 @@ export default function InsightsPage() {
           onClick={() => router.push('/dashboard')}
           className="w-full py-3.5 border-2 border-charcoal/10 rounded-2xl bg-white hover:bg-charcoal/5 text-charcoal font-semibold text-sm transition-all cursor-pointer shadow-sm"
         >
-          Back to Dashboard
+          Back to my space
         </button>
       </div>
     </div>

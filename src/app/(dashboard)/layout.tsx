@@ -30,7 +30,7 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
         <Link href="/dashboard" className="flex items-center gap-1.5">
           <span className="text-2xl">🍀</span>
           <span className="font-display text-xl font-bold text-primary-dark">
-            MunchPick
+            Munch
           </span>
         </Link>
 
