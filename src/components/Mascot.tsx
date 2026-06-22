@@ -1,6 +1,7 @@
 'use client'
  
 import React, { useState, useEffect } from 'react'
+import { motion, Variants } from 'framer-motion'
 import { getMascotCached } from '@/lib/assets-client'
 
 export type MascotCharacter = 'munch' | 'ollie' | 'ellie' | 'pandy' | 'dobby' | 'coco' | 'froggy' | 'bubbles' | 'chicky'
@@ -70,12 +71,7 @@ export default function Mascot({
   const sizeClass = typeof size === 'string' ? SIZE_MAP[size] : ''
   const sizeStyle = typeof size === 'number' ? { width: size, height: size } : undefined
 
-  // Animation class based on expression
-  const getAnimationClass = () => {
-    if (expression === 'happy') return 'animate-celebrate'
-    if (expression === 'wry') return 'animate-sway'
-    return 'animate-float'
-  }
+
 
   // Draw mouth expression
   const renderMouth = (cx = 50, cy = 54) => {
@@ -104,12 +100,34 @@ export default function Mascot({
     return (
       <g id="eyes">
         {/* Left eye */}
-        <circle cx={lx + pupilOffset} cy={y} r="4" fill="#4A4A4A" />
-        <circle cx={lx - 1 + pupilOffset} cy={y - 1.5} r="1.2" fill="#FFFFFF" />
+        <motion.g
+          animate={{ scaleY: [1, 1, 0.1, 1, 1] }}
+          transition={{
+            duration: 6,
+            repeat: Infinity,
+            repeatDelay: 4,
+            ease: 'easeInOut'
+          }}
+          style={{ transformOrigin: `${lx + pupilOffset}px ${y}px` }}
+        >
+          <circle cx={lx + pupilOffset} cy={y} r="4" fill="#4A4A4A" />
+          <circle cx={lx - 1 + pupilOffset} cy={y - 1.5} r="1.2" fill="#FFFFFF" />
+        </motion.g>
         
         {/* Right eye */}
-        <circle cx={rx + pupilOffset} cy={y} r="4" fill="#4A4A4A" />
-        <circle cx={rx - 1 + pupilOffset} cy={y - 1.5} r="1.2" fill="#FFFFFF" />
+        <motion.g
+          animate={{ scaleY: [1, 1, 0.1, 1, 1] }}
+          transition={{
+            duration: 6,
+            repeat: Infinity,
+            repeatDelay: 4,
+            ease: 'easeInOut'
+          }}
+          style={{ transformOrigin: `${rx + pupilOffset}px ${y}px` }}
+        >
+          <circle cx={rx + pupilOffset} cy={y} r="4" fill="#4A4A4A" />
+          <circle cx={rx - 1 + pupilOffset} cy={y - 1.5} r="1.2" fill="#FFFFFF" />
+        </motion.g>
       </g>
     )
   }
@@ -180,8 +198,18 @@ export default function Mascot({
             <ellipse cx="68" cy="55" rx="3" ry="1.5" fill="#FFCFB3" />
             {/* Eyes (in the dark patches, so make them white!) */}
             <g id="panda-eyes">
-              <circle cx="41" cy="47.5" r="2.2" fill="#FFFFFF" />
-              <circle cx="59" cy="47.5" r="2.2" fill="#FFFFFF" />
+              <motion.circle 
+                cx="41" cy="47.5" r="2.2" fill="#FFFFFF" 
+                animate={{ scaleY: [1, 1, 0.1, 1, 1] }}
+                transition={{ duration: 6, repeat: Infinity, repeatDelay: 4, ease: 'easeInOut' }}
+                style={{ transformOrigin: '41px 47.5px' }}
+              />
+              <motion.circle 
+                cx="59" cy="47.5" r="2.2" fill="#FFFFFF" 
+                animate={{ scaleY: [1, 1, 0.1, 1, 1] }}
+                transition={{ duration: 6, repeat: Infinity, repeatDelay: 4, ease: 'easeInOut' }}
+                style={{ transformOrigin: '59px 47.5px' }}
+              />
             </g>
             {renderMouth(50, 57)}
           </g>
@@ -275,8 +303,14 @@ export default function Mascot({
             {/* Cheeks */}
             <ellipse cx="60" cy="53" rx="3" ry="1.5" fill="#FFCFB3" />
             {/* Eyes & Mouth (drawn sideways context) */}
-            <circle cx="64" cy="45" r="4" fill="#4A4A4A" />
-            <circle cx="63" cy="43.5" r="1.2" fill="#FFFFFF" />
+            <motion.g
+              animate={{ scaleY: [1, 1, 0.1, 1, 1] }}
+              transition={{ duration: 6, repeat: Infinity, repeatDelay: 4, ease: 'easeInOut' }}
+              style={{ transformOrigin: '64px 45px' }}
+            >
+              <circle cx="64" cy="45" r="4" fill="#4A4A4A" />
+              <circle cx="63" cy="43.5" r="1.2" fill="#FFFFFF" />
+            </motion.g>
             {renderMouth(70, 50)}
           </g>
         )
@@ -327,38 +361,99 @@ export default function Mascot({
     }
   }
 
+  const mascotVariants: Variants = {
+    float: {
+      y: [0, -3, 0],
+      transition: {
+        duration: 5,
+        repeat: Infinity,
+        ease: 'easeInOut' as const,
+      },
+    },
+    celebrate: {
+      y: [0, -4, 0],
+      scaleY: [1, 0.97, 1.03, 1],
+      transition: {
+        duration: 0.8,
+        repeat: Infinity,
+        ease: 'easeInOut' as const,
+      },
+    },
+    sway: {
+      rotate: [-1.5, 1.5, -1.5],
+      transition: {
+        duration: 4.5,
+        repeat: Infinity,
+        ease: 'easeInOut' as const,
+      },
+    },
+  }
+
+  const getAnimationVariant = () => {
+    if (expression === 'happy') return 'celebrate'
+    if (expression === 'wry') return 'sway'
+    return 'float'
+  }
+
   return (
-    <div 
+    <motion.div 
       className={`relative inline-block ${sizeClass} ${className}`}
       style={sizeStyle}
+      variants={mascotVariants}
+      animate={getAnimationVariant()}
     >
       {loading ? (
         // Loading state: Renders the default SVG with pulse and opacity
         <svg 
           viewBox="0 0 100 100" 
-          className="w-full h-full animate-pulse opacity-45"
-          style={{ transformOrigin: 'bottom center' }}
+          className="w-full h-full opacity-45"
         >
           {renderCharacterSVG()}
         </svg>
       ) : imageUrl && !hasError ? (
         // Render custom PNG image from Supabase storage
+        /* eslint-disable-next-line @next/next/no-img-element */
         <img 
           src={imageUrl} 
           alt={character} 
           onError={() => setHasError(true)}
-          className={`w-full h-full object-contain ${getAnimationClass()}`}
+          className="w-full h-full object-contain"
         />
       ) : (
         // Fallback state: Render the default SVG
         <svg 
           viewBox="0 0 100 100" 
-          className={`w-full h-full ${getAnimationClass()}`}
-          style={{ transformOrigin: 'bottom center' }}
+          className="w-full h-full"
         >
           {renderCharacterSVG()}
         </svg>
       )}
-    </div>
+
+      {/* Tiny Sparkle Particles for Happy/Celebration state */}
+      {expression === 'happy' && (
+        <div className="absolute inset-0 pointer-events-none overflow-visible">
+          {/* Sparkle 1 */}
+          <motion.span 
+            className="absolute text-yellow-400 text-xs"
+            initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
+            animate={{ opacity: [0, 1, 0], scale: [0.5, 1.2, 0.5], x: -8, y: -16 }}
+            transition={{ duration: 2, repeat: Infinity, delay: 0.1 }}
+            style={{ left: '10%', top: '20%' }}
+          >
+            ✨
+          </motion.span>
+          {/* Sparkle 2 */}
+          <motion.span 
+            className="absolute text-yellow-300 text-[8px]"
+            initial={{ opacity: 0, scale: 0, x: 0, y: 0 }}
+            animate={{ opacity: [0, 1, 0], scale: [0.5, 1.1, 0.5], x: 8, y: -20 }}
+            transition={{ duration: 2.2, repeat: Infinity, delay: 0.6 }}
+            style={{ right: '15%', top: '15%' }}
+          >
+            ✨
+          </motion.span>
+        </div>
+      )}
+    </motion.div>
   )
 }

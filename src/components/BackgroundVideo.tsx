@@ -1,15 +1,20 @@
 'use client'
  
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { AlertTriangle, X } from 'lucide-react'
-import { getHeroMobileCached, getHeroDesktopCached } from '@/lib/assets-client'
+import {
+  getHeroMobileSourcesCached,
+  getHeroDesktopSourcesCached,
+  type VideoSources,
+} from '@/lib/assets-client'
  
 export default function BackgroundVideo() {
-  const [videoUrl, setVideoUrl] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [sources, setSources] = useState<VideoSources>({ webm: null, mp4: null })
   const [hasError, setHasError] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
   const [showWarning, setShowWarning] = useState(false)
+  const [isInView, setIsInView] = useState(false)
+  const sentinelRef = useRef<HTMLDivElement>(null)
   const videoRef = useRef<HTMLVideoElement>(null)
  
   // Determine viewport size
@@ -24,27 +29,49 @@ export default function BackgroundVideo() {
     window.addEventListener('resize', checkViewport)
     return () => window.removeEventListener('resize', checkViewport)
   }, [])
- 
-  // Load signed URLs based on viewport
+
+  // Lazy loading: only fetch video when the sentinel is in the viewport
   useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const sentinel = sentinelRef.current
+    if (!sentinel) return
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '200px' }
+    )
+
+    observer.observe(sentinel)
+    return () => observer.disconnect()
+  }, [])
+ 
+  // Load signed URLs based on viewport — only after lazy trigger
+  useEffect(() => {
+    if (!isInView) return
+
     let active = true
  
     async function fetchVideo() {
       try {
-        setLoading(true)
-        const url = isMobile 
-          ? await getHeroMobileCached() 
-          : await getHeroDesktopCached()
+        const videoSources = isMobile 
+          ? await getHeroMobileSourcesCached() 
+          : await getHeroDesktopSourcesCached()
  
         if (active) {
-          if (url) {
-            setVideoUrl(url)
+          const hasAnySource = videoSources.webm || videoSources.mp4
+          if (hasAnySource) {
+            setSources(videoSources)
             setHasError(false)
             setShowWarning(false)
           } else {
-            setVideoUrl(null)
+            setSources({ webm: null, mp4: null })
             setHasError(true)
-            // Show warning if custom assets are missing
             const dismissed = sessionStorage.getItem('dismissed-asset-warning')
             if (!dismissed) {
               setShowWarning(true)
@@ -54,16 +81,12 @@ export default function BackgroundVideo() {
       } catch (err) {
         console.warn('[BackgroundVideo] Error retrieving signed video URL:', err)
         if (active) {
-          setVideoUrl(null)
+          setSources({ webm: null, mp4: null })
           setHasError(true)
           const dismissed = sessionStorage.getItem('dismissed-asset-warning')
           if (!dismissed) {
             setShowWarning(true)
           }
-        }
-      } finally {
-        if (active) {
-          setLoading(false)
         }
       }
     }
@@ -73,39 +96,56 @@ export default function BackgroundVideo() {
     return () => {
       active = false
     }
-  }, [isMobile])
+  }, [isMobile, isInView])
  
   // Handle video element load errors
-  const handleVideoError = () => {
+  const handleVideoError = useCallback(() => {
     console.warn('[BackgroundVideo] Error loading video stream from signed URL')
     setHasError(true)
     const dismissed = sessionStorage.getItem('dismissed-asset-warning')
     if (!dismissed) {
       setShowWarning(true)
     }
-  }
+  }, [])
  
   // Dismiss warning
-  const dismissWarning = () => {
+  const dismissWarning = useCallback(() => {
     setShowWarning(false)
     sessionStorage.setItem('dismissed-asset-warning', 'true')
-  }
+  }, [])
+
+  const hasSource = sources.webm || sources.mp4
  
   return (
     <>
-      {/* Video Background */}
-      {videoUrl && !hasError && (
+      {/* Lazy-load sentinel — always rendered to trigger IntersectionObserver */}
+      <div
+        ref={sentinelRef}
+        className="fixed inset-0 -z-30 pointer-events-none"
+        aria-hidden="true"
+      />
+
+      {/* Video Background — uses <source> for format negotiation */}
+      {hasSource && !hasError && (
         <video
           ref={videoRef}
-          key={videoUrl}
-          src={videoUrl}
           autoPlay
           loop
           muted
           playsInline
+          preload="metadata"
           onError={handleVideoError}
           className="fixed inset-0 w-full h-full object-cover -z-20 opacity-20 pointer-events-none select-none transition-opacity duration-1000 animate-fadeIn"
-        />
+        >
+          {/* Preferred: WebM (VP9/AV1) — smaller, better compression */}
+          {sources.webm && (
+            <source src={sources.webm} type="video/webm" />
+          )}
+          {/* Fallback: MP4 (H.264) — universal compatibility */}
+          {sources.mp4 && (
+            <source src={sources.mp4} type="video/mp4" />
+          )}
+        </video>
       )}
  
       {/* Warning Notice Banner */}

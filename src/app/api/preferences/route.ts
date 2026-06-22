@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const supabase = await createClient()
 
@@ -67,7 +67,16 @@ export async function GET(request: NextRequest) {
       okay: 0,
       meh: 0,
     }
-    feedbackStats?.forEach((f: any) => {
+
+    interface FeedbackStatRow {
+      rating: string
+      decisions: {
+        user_id: string
+      }
+    }
+
+    const typedFeedbackStats = (feedbackStats || []) as unknown as FeedbackStatRow[]
+    typedFeedbackStats.forEach((f) => {
       const rating = f.rating as 'love' | 'okay' | 'meh'
       if (rating in satisfactionBreakdown) {
         satisfactionBreakdown[rating]++
@@ -96,10 +105,10 @@ export async function GET(request: NextRequest) {
       preferences: preferences || [],
       importanceDistribution,
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('GET /api/preferences failed:', error)
     return NextResponse.json(
-      { error: error.message || 'An unexpected error occurred.' },
+      { error: error instanceof Error ? error.message : 'An unexpected error occurred.' },
       { status: 500 }
     )
   }

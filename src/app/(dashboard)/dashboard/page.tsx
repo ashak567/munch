@@ -1,8 +1,9 @@
 import React from 'react'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
-import { PlusCircle, Compass, History, HelpCircle } from 'lucide-react'
+import { PlusCircle, Compass, History } from 'lucide-react'
 import Mascot from '@/components/Mascot'
+import { MotionTap, MotionCard } from '@/components/motion/MotionWrapper'
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -20,7 +21,7 @@ export default async function DashboardPage() {
           Hello, {userName}!
         </h1>
         <p className="text-sm text-charcoal/60 mt-1">
-          Take a breath. Let's find what feels right today.
+          Take a breath. Let&apos;s find what feels right today.
         </p>
       </div>
 
@@ -37,40 +38,46 @@ export default async function DashboardPage() {
           What is on your mind?
         </h3>
         <p className="text-xs text-charcoal/70 leading-relaxed mb-6">
-          Stuck between a few options? Share them with me, and we'll figure out what feels best together.
+          Stuck between a few options? Share them with me, and we&apos;ll figure out what feels best together.
         </p>
 
         {/* Start Decision Button */}
-        <Link
-          href="/dashboard/new"
-          className="w-full py-3 px-6 btn-clay-primary text-sm flex items-center justify-center gap-2 cursor-pointer transition-all duration-200"
-        >
-          <PlusCircle className="w-5 h-5" />
-          Share My Thoughts
-        </Link>
+        <MotionTap className="w-full">
+          <Link
+            href="/dashboard/new"
+            className="w-full py-3 px-6 btn-clay-primary text-sm flex items-center justify-center gap-2 cursor-pointer transition-all duration-200"
+          >
+            <PlusCircle className="w-5 h-5" />
+            Share My Thoughts
+          </Link>
+        </MotionTap>
       </div>
 
       {/* Quick stats / suggestions cards */}
       <div className="grid grid-cols-2 gap-3 w-full max-w-sm">
-        <Link
-          href="/history"
-          className="glass-card hover:bg-white/95 transition-all duration-200 rounded-2xl p-4 text-center cursor-pointer flex flex-col items-center gap-2 border border-white/50"
-        >
-          <div className="p-2 rounded-xl bg-secondary/30 text-secondary-dark">
-            <History className="w-5 h-5" />
-          </div>
-          <span className="text-xs font-semibold text-charcoal">Past Reflections</span>
-        </Link>
+        <MotionCard className="w-full">
+          <Link
+            href="/history"
+            className="glass-card hover:bg-white/95 transition-all duration-200 rounded-2xl p-4 text-center cursor-pointer flex flex-col items-center gap-2 border border-white/50 h-full"
+          >
+            <div className="p-2 rounded-xl bg-secondary/30 text-secondary-dark">
+              <History className="w-5 h-5" />
+            </div>
+            <span className="text-xs font-semibold text-charcoal">Past Reflections</span>
+          </Link>
+        </MotionCard>
 
-        <Link
-          href="/dashboard/new?quick=food"
-          className="glass-card hover:bg-white/95 transition-all duration-200 rounded-2xl p-4 text-center cursor-pointer flex flex-col items-center gap-2 border border-white/50"
-        >
-          <div className="p-2 rounded-xl bg-primary/30 text-primary-dark">
-            <Compass className="w-5 h-5" />
-          </div>
-          <span className="text-xs font-semibold text-charcoal">Cozy Meal Thoughts</span>
-        </Link>
+        <MotionCard className="w-full">
+          <Link
+            href="/dashboard/new?quick=food"
+            className="glass-card hover:bg-white/95 transition-all duration-200 rounded-2xl p-4 text-center cursor-pointer flex flex-col items-center gap-2 border border-white/50 h-full"
+          >
+            <div className="p-2 rounded-xl bg-primary/30 text-primary-dark">
+              <Compass className="w-5 h-5" />
+            </div>
+            <span className="text-xs font-semibold text-charcoal">Cozy Meal Thoughts</span>
+          </Link>
+        </MotionCard>
       </div>
     </div>
   )

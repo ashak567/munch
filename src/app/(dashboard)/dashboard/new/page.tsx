@@ -1,9 +1,7 @@
 'use client'
 
-import React, { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
+import React, { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { createClient } from '@/utils/supabase/client'
 import { 
   ArrowLeft, 
   Plus, 
@@ -14,8 +12,7 @@ import {
   Heart, 
   Smile, 
   Meh,
-  AlertTriangle,
-  HelpCircle
+  AlertTriangle
 } from 'lucide-react'
 
 import Mascot, { type MascotCharacter, type MascotExpression } from '@/components/Mascot'
@@ -29,48 +26,18 @@ interface Option {
 // Step types
 type FlowStep = 'INPUT' | 'IMPORTANCE' | 'SELECTING' | 'RESULT'
 
-// Mock reinforcement databases based on detected category
-const MOCK_REINFORCEMENTS: Record<string, { reasons: string[]; message: string }> = {
-  Food: {
-    reasons: [
-      "It is incredibly satisfying and exactly what your body is craving right now.",
-      "It will give you a great energy boost for the rest of your day.",
-      "It's a perfect treat to reward yourself for all your hard work."
-    ],
-    message: "Treat yourself — you deserve a delicious choice! 🍕"
-  },
-  Entertainment: {
-    reasons: [
-      "It's highly entertaining and a fantastic way to unwind.",
-      "It offers an engaging escape and great storytelling.",
-      "It's the perfect length to fit into your schedule right now."
-    ],
-    message: "Sit back, relax, and enjoy the show! 🍿"
-  },
-  Activities: {
-    reasons: [
-      "It's highly rewarding and will make you feel productive.",
-      "It helps clear your mind and boosts your physical/mental well-being.",
-      "It's a great habit that builds positive momentum for your goals."
-    ],
-    message: "Action cures overthinking. Let's make it happen! 🏃‍♂️"
-  },
-  Shopping: {
-    reasons: [
-      "It's a high-quality item that offers great value for its cost.",
-      "It solves a specific need you've been thinking about recently.",
-      "It's a durable purchase that you'll enjoy using for a long time."
-    ],
-    message: "A smart addition to your day. Enjoy your new find! 🛍️"
-  },
-  Other: {
-    reasons: [
-      "It's the most practical path forward to clear your schedule.",
-      "It lets you cross off a major item and reduces cognitive load.",
-      "It aligns perfectly with your overall goals and daily rhythm."
-    ],
-    message: "Trust your gut — this is the right move! 🍀"
-  }
+
+
+const MASCOT_NAMES: Record<string, string> = {
+  munch: 'Munch',
+  ollie: 'Ollie',
+  ellie: 'Ellie',
+  pandy: 'Pandy',
+  dobby: 'Dobby',
+  coco: 'Coco',
+  froggy: 'Froggy',
+  bubbles: 'Bubbles',
+  chicky: 'Chicky',
 }
 
 export default function NewDecisionPage() {
@@ -98,6 +65,32 @@ export default function NewDecisionPage() {
   
   // Active mascot state based on emotion/context
   const [activeMascot, setActiveMascot] = useState<MascotCharacter>('munch')
+
+  const detectMascotFromTyping = (val: string): MascotCharacter => {
+    const combined = val.toLowerCase()
+    if (/overwhelm|stress|busy|chaotic|hectic/i.test(combined)) {
+      return 'froggy'
+    }
+    if (/doubt|anxious|anxiety|worry|second-guess|unsure|scared|fear/i.test(combined)) {
+      return 'ellie'
+    }
+    if (/encourage|motivate|lazy|procrastinat|start|begin|energy/i.test(combined)) {
+      return 'dobby'
+    }
+    if (/tired|sad|comfort|unhappy|cozy|hurt/i.test(combined)) {
+      return 'pandy'
+    }
+    if (/curious|explore|new|interest|learn|curiosity/i.test(combined)) {
+      return 'coco'
+    }
+    if (/reflect|think|thoughtful|ponder|analyse|study/i.test(combined)) {
+      return 'ollie'
+    }
+    if (/open|relax|flexible|simple|easy|openness/i.test(combined)) {
+      return 'bubbles'
+    }
+    return 'munch'
+  }
   
   // Feedback State
   const [feedbackRating, setFeedbackRating] = useState<string | null>(null)
@@ -150,32 +143,19 @@ export default function NewDecisionPage() {
   useEffect(() => {
     const quickParam = searchParams.get('quick')
     if (quickParam === 'food') {
-      setOptions([
-        { id: '1', text: 'Cheesy Neapolitan Pizza' },
-        { id: '2', text: 'Fresh Spicy Tuna Sushi' },
-        { id: '3', text: 'Creamy Garlic Pasta' },
-        { id: '4', text: 'Crispy Falafel Wrap' }
-      ])
+      const timer = setTimeout(() => {
+        setOptions([
+          { id: '1', text: 'Cheesy Neapolitan Pizza' },
+          { id: '2', text: 'Fresh Spicy Tuna Sushi' },
+          { id: '3', text: 'Creamy Garlic Pasta' },
+          { id: '4', text: 'Crispy Falafel Wrap' }
+        ])
+      }, 0)
+      return () => clearTimeout(timer)
     }
   }, [searchParams])
 
-  // Detect category mock logic based on option texts
-  const detectCategory = (opts: Option[]): string => {
-    const textStr = opts.map(o => o.text.toLowerCase()).join(' ')
-    if (/pizza|sushi|pasta|burger|food|eat|dinner|lunch|breakfast|restaurant|cafe|falafel/i.test(textStr)) {
-      return 'Food'
-    }
-    if (/movie|film|netflix|show|watch|game|youtube|music|book|podcast|concert/i.test(textStr)) {
-      return 'Entertainment'
-    }
-    if (/run|gym|work|study|code|read|sleep|clean|meditate|exercise|walk|activity/i.test(textStr)) {
-      return 'Activities'
-    }
-    if (/buy|shop|clothes|shoes|amazon|gadget|item|purchase|price/i.test(textStr)) {
-      return 'Shopping'
-    }
-    return 'Other'
-  }
+
 
   // Option Adding
   const handleAddOption = () => {
@@ -237,7 +217,6 @@ export default function NewDecisionPage() {
     setAnimationIndex(-1)
 
     // Start a visual rapid-shuffling animation loop
-    let currentShuffleIdx = 0
     const shuffleInterval = setInterval(() => {
       setAnimationIndex((prev) => {
         // Shuffle randomly
@@ -248,67 +227,63 @@ export default function NewDecisionPage() {
         }
         return nextIdx
       })
-      currentShuffleIdx++
     }, 100)
 
     // Fire API request
-    let apiResponse: any = null
-    let apiError: string | null = null
-
-    const apiPromise = fetch('/api/decisions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        options: options.map(o => o.text),
-        importance: finalImportance,
-        emotionalState,
-        currentContext,
-      }),
-    })
-      .then(async (res) => {
-        if (!res.ok) {
-          const data = await res.json()
-          throw new Error(data.error || 'Failed to generate decision')
-        }
-        return res.json()
-      })
-      .then((data) => {
-        apiResponse = data
-      })
-      .catch((err) => {
-        apiError = err.message || 'An error occurred while connecting to the decision server.'
-      })
-
+    interface APIResponseDecisions {
+      id: string
+      category: string
+      mascot?: string
+      selectedOption: { text: string }
+      reinforcement: {
+        selected_option: string
+        reasoning: string
+        encouragement: string
+        follow_up_question: string
+        mascot: string
+      }
+    }
     // Enforce a minimum 2.5-second animation delay for a slot-machine delight feel
     const delayPromise = new Promise((resolve) => setTimeout(resolve, 2500))
 
     try {
-      await Promise.all([apiPromise, delayPromise])
+      const apiPromise = fetch('/api/decisions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          options: options.map(o => o.text),
+          importance: finalImportance,
+          emotionalState,
+          currentContext,
+        }),
+      }).then(async (res) => {
+        if (!res.ok) {
+          const data = await res.json()
+          throw new Error(data.error || 'Failed to generate decision')
+        }
+        return res.json() as Promise<APIResponseDecisions>
+      })
+
+      const [response] = await Promise.all([apiPromise, delayPromise])
       clearInterval(shuffleInterval)
 
-      if (apiError) {
-        setErrorMsg(apiError)
-        setStep('INPUT')
-        return
-      }
-
       // Land on the actual selected option returned by the server
-      const selectedOptionText = apiResponse.selectedOption.text
+      const selectedOptionText = response.selectedOption.text
       const matchedIndex = options.findIndex(o => o.text === selectedOptionText)
       const finalIndex = matchedIndex !== -1 ? matchedIndex : 0
 
       setSelectedIndex(finalIndex)
       setAnimationIndex(finalIndex)
-      setDetectedCategory(apiResponse.category)
-      setReinforcement(apiResponse.reinforcement)
-      setDecisionId(apiResponse.id)
-      setActiveMascot((apiResponse.mascot || apiResponse.reinforcement?.mascot || 'munch') as MascotCharacter)
+      setDetectedCategory(response.category)
+      setReinforcement(response.reinforcement)
+      setDecisionId(response.id)
+      setActiveMascot((response.mascot || response.reinforcement?.mascot || 'munch') as MascotCharacter)
       setStep('RESULT')
-    } catch (err: any) {
+    } catch (err: unknown) {
       clearInterval(shuffleInterval)
-      setErrorMsg(err.message || 'An unexpected error occurred during selection.')
+      setErrorMsg(err instanceof Error ? err.message : 'An unexpected error occurred during selection.')
       setStep('INPUT')
     }
   }
@@ -367,7 +342,7 @@ export default function NewDecisionPage() {
         
         {/* STEP 1: INPUT OPTIONS */}
         {step === 'INPUT' && (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-fade-in">
             {errorMsg && (
               <div className="flex items-start gap-2 bg-coral/15 border border-coral/30 text-coral-dark rounded-xl p-3 text-2xs relative">
                 <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
@@ -382,6 +357,25 @@ export default function NewDecisionPage() {
                 </button>
               </div>
             )}
+
+            {/* Header Greeting Mascot Card */}
+            <div className="glass-card rounded-3xl p-4 border border-white/50 flex gap-4 items-center animate-float-delayed">
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                <Mascot character="munch" expression="idle" size="sm" />
+                {activeMascot !== 'munch' && (
+                  <Mascot character={activeMascot} expression="idle" size="sm" className="animate-float" />
+                )}
+              </div>
+              <div className="flex-1 text-xs text-charcoal/70 leading-relaxed text-left">
+                {activeMascot === 'munch' ? (
+                  <p className="italic">{"\"Tell me what's on your mind. We'll listen to your feelings and find a cozy path.\""}</p>
+                ) : (
+                  <p className="italic font-semibold">
+                    {"\"I've asked "}{MASCOT_NAMES[activeMascot] || activeMascot}{" to sit with us. We are right here with you.\""}
+                  </p>
+                )}
+              </div>
+            </div>
             
             {/* Input Field with Add Button */}
             <div className="space-y-2">
@@ -414,22 +408,26 @@ export default function NewDecisionPage() {
             </div>
 
             {/* Optional Mood & Context Panel */}
-            <div className="bg-white/45 backdrop-blur-sm border border-white/60 rounded-2xl p-4 shadow-sm space-y-3">
-              <span className="text-[10px] font-bold text-charcoal/50 uppercase tracking-wider block">
+            <div className="bg-white/45 backdrop-blur-sm border border-white/60 rounded-2xl p-4 shadow-sm space-y-4">
+              <span className="text-[10px] font-bold text-charcoal/50 uppercase tracking-wider block text-left">
                 How are you feeling in this moment? (Optional) 🍀
               </span>
               <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1">
+                <div className="space-y-1 text-left">
                   <label className="text-[9px] font-black text-charcoal/50 uppercase tracking-wider block">Your Mood</label>
                   <input
                     type="text"
                     value={emotionalState}
-                    onChange={(e) => setEmotionalState(e.target.value)}
+                    onChange={(e) => {
+                      setEmotionalState(e.target.value)
+                      const detected = detectMascotFromTyping(e.target.value)
+                      setActiveMascot(detected)
+                    }}
                     placeholder="e.g. tired, overwhelmed"
                     className="w-full px-3 py-2 text-xs border border-white/80 rounded-xl bg-white/80 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary-dark shadow-sm text-charcoal"
                   />
                 </div>
-                <div className="space-y-1">
+                <div className="space-y-1 text-left">
                   <label className="text-[9px] font-black text-charcoal/50 uppercase tracking-wider block">Your Context</label>
                   <input
                     type="text"
@@ -438,6 +436,45 @@ export default function NewDecisionPage() {
                     placeholder="e.g. studying, busy day"
                     className="w-full px-3 py-2 text-xs border border-white/80 rounded-xl bg-white/80 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary-dark shadow-sm text-charcoal"
                   />
+                </div>
+              </div>
+
+              {/* Quick Feeling Presets */}
+              <div className="space-y-2 pt-2 border-t border-charcoal/5 text-left">
+                <label className="text-[9px] font-black text-charcoal/50 uppercase tracking-wider block">Quick Feeling Presets</label>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    { label: 'Overwhelmed 🐸', value: 'overwhelmed', character: 'froggy' },
+                    { label: 'Doubting 🐘', value: 'doubt', character: 'ellie' },
+                    { label: 'Tired/Comfort 🐼', value: 'tired', character: 'pandy' },
+                    { label: 'Need encouragement 🐶', value: 'need encouragement', character: 'dobby' },
+                    { label: 'Curious 🐱', value: 'curious', character: 'coco' },
+                    { label: 'Open-minded 🐟', value: 'open', character: 'bubbles' },
+                  ].map((preset) => {
+                    const isSelected = emotionalState.toLowerCase() === preset.value
+                    return (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        onClick={() => {
+                          if (isSelected) {
+                            setEmotionalState('')
+                            setActiveMascot('munch')
+                          } else {
+                            setEmotionalState(preset.value)
+                            setActiveMascot(preset.character as MascotCharacter)
+                          }
+                        }}
+                        className={`text-[10px] px-2.5 py-1 rounded-full border transition-all cursor-pointer font-medium ${
+                          isSelected
+                            ? 'bg-primary/20 border-primary text-primary-dark font-bold scale-102 shadow-sm'
+                            : 'bg-white/80 border-charcoal/10 hover:bg-white text-charcoal/70'
+                        }`}
+                      >
+                        {preset.label}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
             </div>
@@ -473,7 +510,7 @@ export default function NewDecisionPage() {
                 <div className="glass-card rounded-2xl p-8 border border-white/50 text-center flex flex-col items-center justify-center gap-2">
                   <span className="text-3xl animate-float">🌱</span>
                   <p className="text-xs text-charcoal/50 leading-relaxed max-w-xs">
-                    Write down at least two paths you're stuck between, and we'll find a gentle way forward together.
+                    Write down at least two paths you&apos;re stuck between, and we&apos;ll find a gentle way forward together.
                   </p>
                 </div>
               ) : (
@@ -517,7 +554,7 @@ export default function NewDecisionPage() {
                 </div>
                 <div className="flex-1 relative bg-white border border-white/85 rounded-2xl rounded-tl-none p-4 shadow-sm text-charcoal text-xs leading-relaxed">
                   <p className="font-semibold text-charcoal leading-relaxed">
-                    "What's most important to you right now?"
+                    {"\"What's most important to you right now?\""}
                   </p>
                 </div>
               </div>
@@ -592,11 +629,22 @@ export default function NewDecisionPage() {
             <div className="glass-card rounded-3xl p-5 border border-white/50 space-y-4">
               <div className="flex gap-4 items-start">
                 <div className="flex-shrink-0 mt-1">
-                  <Mascot 
-                    character={activeMascot} 
-                    expression={getMascotExpression()} 
-                    size="md" 
-                  />
+                  <div className="flex flex-col items-center gap-2 sm:flex-row sm:gap-1.5">
+                    <Mascot 
+                      character="munch" 
+                      expression="idle" 
+                      size="sm" 
+                      className="drop-shadow-sm"
+                    />
+                    {activeMascot !== 'munch' && (
+                      <Mascot 
+                        character={activeMascot} 
+                        expression={getMascotExpression()} 
+                        size="sm" 
+                        className="drop-shadow-sm"
+                      />
+                    )}
+                  </div>
                 </div>
                 {/* Speech Bubble */}
                 <div className="flex-1 relative bg-white border border-white/85 rounded-2xl rounded-tl-none p-4 shadow-sm text-charcoal text-xs leading-relaxed">
@@ -641,7 +689,7 @@ export default function NewDecisionPage() {
                   } ${feedbackRating !== null && feedbackRating !== 'okay' ? 'opacity-40 scale-95' : ''}`}
                 >
                   <Smile className={`w-5 h-5 ${feedbackRating === 'okay' ? 'fill-yellow text-yellow-700' : ''}`} />
-                  <span className="text-[10px] font-bold">It's okay</span>
+                  <span className="text-[10px] font-bold">It&apos;s okay</span>
                 </button>
 
                 <button
@@ -673,7 +721,7 @@ export default function NewDecisionPage() {
             className="w-full py-3.5 btn-clay-primary text-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >
             <Sparkles className="w-5 h-5" />
-            Let's find what feels right
+            Let&apos;s find what feels right
           </button>
         )}
 

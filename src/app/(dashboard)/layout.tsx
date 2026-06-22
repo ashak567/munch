@@ -2,9 +2,9 @@ import React from 'react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
-import { Sparkles, History, BarChart3, User, LogOut } from 'lucide-react'
 import BottomNav from '@/app/(dashboard)/components/BottomNav'
 import BackgroundVideo from '@/components/BackgroundVideo'
+import Envelope from '@/components/envelope/Envelope'
 
 interface DashboardLayoutProps {
   children: React.ReactNode
@@ -57,6 +57,9 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
 
       {/* Shared Bottom Navigation Component */}
       <BottomNav />
+
+      {/* Surprise Letter from Munch */}
+      <Envelope />
     </div>
   )
 }

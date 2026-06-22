@@ -54,8 +54,8 @@ export default function RegisterPage() {
       } else if (result?.success) {
         setSuccessMsg(result.message || 'Registration successful! Please confirm your email.')
       }
-    } catch (err: any) {
-      setErrorMsg(err.message || 'An unexpected error occurred.')
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : 'An unexpected error occurred.')
     } finally {
       setLoading(false)
     }
@@ -73,8 +73,8 @@ export default function RegisterPage() {
         },
       });
       if (error) throw error
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to initialize Google login.')
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : 'Failed to initialize Google login.')
       setGoogleLoading(false)
     }
   }
@@ -90,7 +90,7 @@ export default function RegisterPage() {
           </span>
         </Link>
         <p className="text-sm text-charcoal/70">
-          Let's get you set up to share your thoughts!
+          Let&apos;s get you set up to share your thoughts!
         </p>
       </div>
 
@@ -102,7 +102,7 @@ export default function RegisterPage() {
           <div className="flex-1">
             <h4 className="font-display font-bold text-sm text-charcoal">Munch says...</h4>
             <p className="text-xs text-charcoal/80 leading-snug">
-              "Create an account and let's start sharing reflections together! 🍀"
+              {"\"Create an account and let's start sharing reflections together! 🍀\""}
             </p>
           </div>
         </div>

@@ -10,7 +10,7 @@ import {
   Sparkles,
   AlertTriangle
 } from 'lucide-react'
-import Mascot, { type MascotCharacter } from '@/components/Mascot'
+import Mascot from '@/components/Mascot'
  
 interface PreferenceItem {
   category: string
@@ -49,9 +49,9 @@ export default function OurConversationsPage() {
         }
         const parsed = await res.json()
         setData(parsed)
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error(err)
-        setErrorMsg(err.message || 'Unable to retrieve your reflections.')
+        setErrorMsg(err instanceof Error ? err.message : 'Unable to retrieve your reflections.')
       } finally {
         setLoading(false)
       }
@@ -103,10 +103,10 @@ export default function OurConversationsPage() {
           </div>
  
           <h3 className="font-display text-lg font-bold text-charcoal mb-3">
-            "I'm still learning what matters most to you."
+            {"\"I'm still learning what matters most to you.\""}
           </h3>
           <p className="text-xs text-charcoal/60 max-w-xs leading-relaxed mb-8">
-            Ollie needs to sit with you through at least 5 decisions to notice patterns in what feels comfortable. Let's share a few more thoughts together.
+            Ollie needs to sit with you through at least 5 decisions to notice patterns in what feels comfortable. Let&apos;s share a few more thoughts together.
           </p>
  
           <button
@@ -270,7 +270,7 @@ export default function OurConversationsPage() {
             </div>
             <div className="flex-1 relative bg-white border border-white/85 rounded-2xl rounded-tl-none p-4 shadow-sm text-charcoal text-xs leading-relaxed">
               <p className="font-semibold text-charcoal">
-                "Let's look back at what feels comfortable to you."
+                {"\"Let's look back at what feels comfortable to you.\""}
               </p>
             </div>
           </div>

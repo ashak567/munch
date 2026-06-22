@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
-import { classifyOptions, generateReinforcement, type Category } from '@/utils/gemini'
+import { classifyOptions, generateReinforcement } from '@/utils/gemini'
 
 // Type definition for preference scores from database
 interface PreferenceRow {
@@ -65,6 +65,10 @@ export async function POST(request: NextRequest) {
       .select('tag, score, category')
       .eq('user_id', user.id)
       .eq('category', category)
+
+    if (prefsError) {
+      console.error('Failed to fetch preferences:', prefsError)
+    }
 
     const preferencesList: PreferenceRow[] = (preferencesData || []) as PreferenceRow[]
 
@@ -224,10 +228,10 @@ export async function POST(request: NextRequest) {
         message: reinforcement.encouragement,
       },
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('POST /api/decisions failed with error:', error)
     return NextResponse.json(
-      { error: error.message || 'An unexpected error occurred.' },
+      { error: error instanceof Error ? error.message : 'An unexpected error occurred.' },
       { status: 500 }
     )
   }
@@ -299,8 +303,15 @@ export async function GET(request: NextRequest) {
       console.error('Failed to fetch feedback:', feedbackError)
     }
 
+    interface MergedOption {
+      text: string
+      isSelected: boolean
+      weight: number
+      tags: string[]
+    }
+
     // 6. Map options and feedback to decisions
-    const optionsMap: Record<string, any[]> = {}
+    const optionsMap: Record<string, MergedOption[]> = {}
     const feedbackMap: Record<string, string> = {}
 
     optionsData?.forEach((opt) => {
@@ -338,10 +349,10 @@ export async function GET(request: NextRequest) {
       decisions: mergedDecisions,
       total: count || 0,
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('GET /api/decisions failed:', error)
     return NextResponse.json(
-      { error: error.message || 'An unexpected error occurred.' },
+      { error: error instanceof Error ? error.message : 'An unexpected error occurred.' },
       { status: 500 }
     )
   }
@@ -393,10 +404,10 @@ export async function DELETE(request: NextRequest) {
       success: true,
       message: 'Decision deleted successfully.',
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('DELETE /api/decisions failed:', error)
     return NextResponse.json(
-      { error: error.message || 'An unexpected error occurred.' },
+      { error: error instanceof Error ? error.message : 'An unexpected error occurred.' },
       { status: 500 }
     )
   }

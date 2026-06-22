@@ -3,18 +3,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
-  History, 
   Trash2, 
   ChevronDown, 
   ChevronUp, 
   Check, 
   Calendar,
-  Sparkles,
   AlertTriangle,
-  ArrowRight,
-  Smile,
-  Heart,
-  Meh
+  ArrowRight
 } from 'lucide-react'
 import Mascot, { type MascotCharacter } from '@/components/Mascot'
 
@@ -36,13 +31,7 @@ interface DecisionHistoryItem {
   mascot: string
 }
 
-const CATEGORY_META: Record<string, { emoji: string; bg: string; text: string }> = {
-  Food: { emoji: '🍕', bg: 'bg-primary/20', text: 'text-primary-dark' },
-  Entertainment: { emoji: '🍿', bg: 'bg-secondary/20', text: 'text-secondary-dark' },
-  Activities: { emoji: '🏃‍♂️', bg: 'bg-yellow/20', text: 'text-yellow-700' },
-  Shopping: { emoji: '🛍️', bg: 'bg-coral/20', text: 'text-coral-dark' },
-  Other: { emoji: '🍀', bg: 'bg-white/60', text: 'text-charcoal/80' }
-}
+
 
 const RATING_META: Record<string, { emoji: string; label: string; color: string }> = {
   love: { emoji: '❤️', label: 'Loved it', color: 'text-red-500 bg-red-50' },
@@ -87,9 +76,9 @@ export default function HistoryPage() {
       
       setTotal(data.total)
       setHasMore(currentOffset + limit < data.total)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err)
-      setErrorMsg(err.message || 'Unable to load your history.')
+      setErrorMsg(err instanceof Error ? err.message : 'Unable to load your history.')
     } finally {
       setLoading(false)
       setLoadingMore(false)
@@ -98,7 +87,16 @@ export default function HistoryPage() {
 
   // Initial load
   useEffect(() => {
-    fetchPage(0, false)
+    let active = true
+    const timer = setTimeout(() => {
+      if (active) {
+        fetchPage(0, false)
+      }
+    }, 0)
+    return () => {
+      active = false
+      clearTimeout(timer)
+    }
   }, [fetchPage])
 
   // Infinite scroll observer setup
@@ -145,8 +143,8 @@ export default function HistoryPage() {
       setDecisions(prev => prev.filter(item => item.id !== id))
       setTotal(prev => Math.max(0, prev - 1))
       if (expandedId === id) setExpandedId(null)
-    } catch (err: any) {
-      alert(err.message || 'Could not delete decision. Please try again.')
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : 'Could not delete decision. Please try again.')
     } finally {
       setDeletingId(null)
     }
@@ -228,7 +226,7 @@ export default function HistoryPage() {
             </div>
             <h3 className="font-display text-lg font-bold text-charcoal mb-2">No reflections yet</h3>
             <p className="text-xs text-charcoal/50 max-w-xs leading-relaxed mb-6">
-              Munch is here to listen and help quiet the chatter. Let's share our first thought together.
+              Munch is here to listen and help quiet the chatter. Let&apos;s share our first thought together.
             </p>
             <button
               onClick={() => router.push('/dashboard/new')}
@@ -251,7 +249,6 @@ export default function HistoryPage() {
                 <div className="space-y-3">
                   {grouped[dateGroup].map((item) => {
                     const isExpanded = expandedId === item.id
-                    const meta = CATEGORY_META[item.category] || CATEGORY_META.Other
                     const ratingMeta = item.rating ? RATING_META[item.rating] : null
 
                     return (
@@ -317,16 +314,26 @@ export default function HistoryPage() {
                           <div className="px-4 pb-4 pt-1 border-t border-charcoal/5 bg-cream/40 space-y-4 animate-fade-in">
                             {/* Reinforcement */}
                             <div className="bg-white/80 border border-white rounded-xl p-3 flex gap-2.5 items-start">
-                              <Mascot 
-                                character={item.mascot as MascotCharacter || 'munch'} 
-                                expression="idle" 
-                                size="sm" 
-                                className="flex-shrink-0 mt-0.5" 
-                              />
+                              <div className="flex-shrink-0 mt-0.5 flex flex-col items-center gap-1.5 sm:flex-row sm:gap-1">
+                                <Mascot 
+                                  character="munch" 
+                                  expression="idle" 
+                                  size="sm" 
+                                  className="drop-shadow-sm"
+                                />
+                                {item.mascot && item.mascot !== 'munch' && (
+                                  <Mascot 
+                                    character={item.mascot as MascotCharacter} 
+                                    expression="idle" 
+                                    size="sm" 
+                                    className="drop-shadow-sm"
+                                  />
+                                )}
+                              </div>
                               <div>
-                                <h5 className="text-[10px] font-bold uppercase tracking-wider text-charcoal/50">Munch's Reflections</h5>
+                                <h5 className="text-[10px] font-bold uppercase tracking-wider text-charcoal/50">Munch&apos;s Reflections</h5>
                                 <p className="text-xs text-charcoal/80 italic mt-0.5">
-                                  "{item.reinforcementMessage}"
+                                  &ldquo;{item.reinforcementMessage}&rdquo;
                                 </p>
                               </div>
                             </div>

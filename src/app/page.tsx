@@ -1,7 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { createClient } from '@/utils/supabase/server'
-import { ArrowRight, ChevronRight, CheckCircle2, Star, Sparkles } from 'lucide-react'
+import { ArrowRight, ChevronRight, Star, Sparkles } from 'lucide-react'
 import Mascot from '@/components/Mascot'
 
 export default async function LandingPage() {
@@ -12,17 +12,7 @@ export default async function LandingPage() {
 
   const isLoggedIn = !!user
 
-  const mascotTeam = [
-    { name: 'Munch 🍀', role: 'Understanding', character: 'munch' as const, bg: 'bg-white/60', description: 'Gently quiets the noise in your mind' },
-    { name: 'Froggy 🐸', role: 'Calm', character: 'froggy' as const, bg: 'bg-primary/10', description: 'Helps you slow down when overwhelmed' },
-    { name: 'Ellie 🐘', role: 'Reassurance', character: 'ellie' as const, bg: 'bg-secondary/10', description: 'Comforts you when second-guessing' },
-    { name: 'Dobby 🐶', role: 'Encouragement', character: 'dobby' as const, bg: 'bg-yellow/10', description: 'Inspires you to take the first step' },
-    { name: 'Chicky 🐥', role: 'Joy', character: 'chicky' as const, bg: 'bg-coral/10', description: 'Celebrates your completed choices' },
-    { name: 'Pandy 🐼', role: 'Comfort', character: 'pandy' as const, bg: 'bg-white/70', description: 'Brings warmth when you feel tired' },
-    { name: 'Ollie 🦉', role: 'Reflection', character: 'ollie' as const, bg: 'bg-secondary/20', description: 'Sits with you in quiet thought' },
-    { name: 'Coco 🐱', role: 'Curiosity', character: 'coco' as const, bg: 'bg-yellow/20', description: 'Sparkles a playful interest in new paths' },
-    { name: 'Bubbles 🐟', role: 'Openness', character: 'bubbles' as const, bg: 'bg-primary/20', description: 'Keeps your options light and open' }
-  ]
+
 
   const testimonials = [
     {
@@ -109,30 +99,25 @@ export default async function LandingPage() {
         <div className="w-full space-y-4 text-center">
           <div className="space-y-1">
             <h3 className="font-display font-black text-xl text-charcoal">
-              Meet the Munch Team
+              Meet your companion
             </h3>
             <p className="text-3xs text-charcoal/50 uppercase tracking-widest font-bold">
-              Gentle friends for every mood
+              Gently quiets the noise in your mind
             </p>
           </div>
 
-          <div className="flex gap-4 overflow-x-auto pb-4 pt-1 px-1 scrollbar-none snap-x snap-mandatory">
-            {mascotTeam.map((m) => (
-              <div
-                key={m.name}
-                className={`snap-center flex-shrink-0 w-36 glass-panel rounded-3xl p-4 border text-center flex flex-col items-center justify-between space-y-3 shadow-sm hover:scale-102 hover:shadow-md transition-all ${m.bg}`}
-              >
-                <Mascot character={m.character} expression="idle" size="sm" />
-                <div>
-                  <h4 className="font-display font-extrabold text-xs text-charcoal truncate w-full">
-                    {m.name}
-                  </h4>
-                  <p className="text-[9px] text-charcoal/60 leading-snug mt-1 max-w-[110px] mx-auto">
-                    {m.description}
-                  </p>
-                </div>
+          <div className="flex justify-center pt-1 px-1">
+            <div className="w-48 glass-panel rounded-3xl p-6 border text-center flex flex-col items-center justify-between space-y-4 shadow-md hover:scale-102 hover:shadow-lg transition-all bg-white/60">
+              <Mascot character="munch" expression="idle" size="md" />
+              <div>
+                <h4 className="font-display font-extrabold text-sm text-charcoal truncate w-full">
+                  Munch 🍀
+                </h4>
+                <p className="text-3xs text-charcoal/60 leading-snug mt-1 max-w-[140px] mx-auto">
+                  Understanding: Gently quiets the noise in your mind
+                </p>
               </div>
-            ))}
+            </div>
           </div>
         </div>
 
@@ -150,7 +135,7 @@ export default async function LandingPage() {
               <div>
                 <h4 className="text-xs font-bold text-charcoal">Share your thoughts</h4>
                 <p className="text-2xs text-charcoal/60 leading-relaxed mt-0.5">
-                  Write down the paths you're stuck between. Take your time—there is never any rush.
+                  Write down the paths you&apos;re stuck between. Take your time—there is never any rush.
                 </p>
               </div>
             </div>
@@ -199,7 +184,7 @@ export default async function LandingPage() {
                   ))}
                 </div>
                 <p className="text-xs text-charcoal/80 leading-relaxed italic">
-                  "{t.quote}"
+                  &ldquo;{t.quote}&rdquo;
                 </p>
                 <div className="flex justify-between items-center text-3xs font-bold text-charcoal/50">
                   <span>{t.author}</span>
@@ -217,7 +202,7 @@ export default async function LandingPage() {
           </div>
           
           <h3 className="font-display text-lg font-black text-charcoal leading-tight">
-            Let's figure it out together.
+            Let&apos;s figure it out together.
           </h3>
           <p className="text-2xs text-charcoal/60 leading-normal max-w-xs mx-auto">
             Munch is here to help you hear yourself more clearly. Quiet the overthinking, and take a gentle step forward today.

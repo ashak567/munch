@@ -27,7 +27,11 @@ function LoginForm() {
   useEffect(() => {
     const errorParam = searchParams.get('error')
     if (errorParam) {
-      setErrorMsg(decodeURIComponent(errorParam))
+      const decoded = decodeURIComponent(errorParam)
+      const timer = setTimeout(() => {
+        setErrorMsg(decoded)
+      }, 0)
+      return () => clearTimeout(timer)
     }
   }, [searchParams])
 
@@ -53,8 +57,8 @@ function LoginForm() {
       if (result?.error) {
         setErrorMsg(result.error)
       }
-    } catch (err: any) {
-      setErrorMsg(err.message || 'An unexpected error occurred.')
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : 'An unexpected error occurred.')
     } finally {
       setLoading(false)
     }
@@ -72,8 +76,8 @@ function LoginForm() {
         },
       });
       if (error) throw error
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Failed to initialize Google login.')
+    } catch (err: unknown) {
+      setErrorMsg(err instanceof Error ? err.message : 'Failed to initialize Google login.')
       setGoogleLoading(false)
     }
   }
@@ -86,7 +90,7 @@ function LoginForm() {
         <div className="flex-1">
           <h4 className="font-display font-bold text-sm text-charcoal">Welcome back!</h4>
           <p className="text-xs text-charcoal/80 leading-snug">
-            "Ready to quiet the noise and sit with your thoughts? Let's take a breath together."
+            {"\"Ready to quiet the noise and sit with your thoughts? Let's take a breath together.\""}
           </p>
         </div>
       </div>
@@ -210,7 +214,7 @@ function LoginForm() {
 
       {/* Toggle Sign Up link */}
       <p className="text-center text-xs text-charcoal/60 mt-6">
-        Don't have an account?{' '}
+        Don&apos;t have an account?{' '}
         <Link href="/register" className="font-bold text-primary-dark hover:underline">
           Sign Up
         </Link>

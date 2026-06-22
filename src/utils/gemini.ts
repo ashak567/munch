@@ -1,14 +1,8 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import { serverEnv } from '@/lib/env'
 
-// Initialize the Gemini API client
-const getGenAI = () => {
-  const apiKey = process.env.GEMINI_API_KEY
-  if (!apiKey) {
-    console.warn("GEMINI_API_KEY is not defined in environment variables. Fallbacks will be active.")
-    return null
-  }
-  return new GoogleGenerativeAI(apiKey)
-}
+// Initialize the Gemini API client — guaranteed valid by env.ts validation
+const genAI = new GoogleGenerativeAI(serverEnv.GEMINI_API_KEY)
 
 // Enforce category types
 export type Category = 'Food' | 'Entertainment' | 'Activities' | 'Shopping' | 'Other'
@@ -43,11 +37,6 @@ const withTimeout = <T>(promise: Promise<T>, ms: number, errorMessage: string): 
  * Task 3.2: Classify a list of options and extract descriptive tags.
  */
 export async function classifyOptions(options: string[]): Promise<ClassificationResult> {
-  const genAI = getGenAI()
-  if (!genAI) {
-    return getFallbackClassification(options)
-  }
-
   const prompt = `
 You are the backend classification helper for Munch, a gentle four-leaf clover companion.
 Analyze the following list of options and:
@@ -118,11 +107,6 @@ export async function generateReinforcement(
     feedbackHistory?: string
   }
 ): Promise<ReinforcementResult> {
-  const genAI = getGenAI()
-  if (!genAI) {
-    return getFallbackReinforcement(selectedOption, category, context)
-  }
-
   const prompt = `
 You are Munch 🍀, a gentle four-leaf clover companion that helps Navi slow down, understand her thoughts, and make decisions she feels comfortable with.
 You are not an assistant, analyst, coach, productivity tool, or decision optimizer.
@@ -257,25 +241,25 @@ function getFallbackClassification(options: string[]): ClassificationResult {
 // Detect fallback mascot based on text context keywords
 function detectMascotFromContext(emotionalState = '', currentContext = ''): string {
   const combined = `${emotionalState} ${currentContext}`.toLowerCase()
-  if (/overwhelm|stress|busy|chaotic|hectic|tired|exhaust/i.test(combined)) {
+  if (/overwhelm|stress|busy|chaotic|hectic/i.test(combined)) {
     return 'froggy'
   }
   if (/doubt|anxious|anxiety|worry|second-guess|unsure|scared|fear/i.test(combined)) {
     return 'ellie'
   }
-  if (/encourage|motivate|lazy|procrastinat|start|begin|work|study/i.test(combined)) {
+  if (/encourage|motivate|lazy|procrastinat|start|begin|energy/i.test(combined)) {
     return 'dobby'
   }
   if (/tired|sad|comfort|unhappy|cozy|hurt/i.test(combined)) {
     return 'pandy'
   }
-  if (/curious|explore|new|interest|learn/i.test(combined)) {
+  if (/curious|explore|new|interest|learn|curiosity/i.test(combined)) {
     return 'coco'
   }
-  if (/reflect|think|thoughtful|ponder/i.test(combined)) {
+  if (/reflect|think|thoughtful|ponder|analyse|study/i.test(combined)) {
     return 'ollie'
   }
-  if (/open|relax|flexible|simple|easy/i.test(combined)) {
+  if (/open|relax|flexible|simple|easy|openness/i.test(combined)) {
     return 'bubbles'
   }
   if (/happy|joy|excite|celebrat|great|good/i.test(combined)) {

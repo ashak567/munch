@@ -98,45 +98,56 @@ export async function POST(request: NextRequest) {
       .eq('option_text', decision.selected_option)
       .single()
 
+    if (optionsError) {
+      console.error('Failed to fetch option tags:', optionsError)
+    }
+
     const selectedOptionTags: string[] = optionsData?.tags || []
 
     if (selectedOptionTags.length > 0) {
-      // Loop through each tag, fetch existing preference, and upsert
-      for (const tag of selectedOptionTags) {
-        const tagLower = tag.trim().toLowerCase()
-        if (!tagLower) continue
+      // Normalize tags upfront
+      const normalizedTags = selectedOptionTags
+        .map((t) => t.trim().toLowerCase())
+        .filter((t) => t.length > 0)
 
-        // Fetch existing preference for (user_id, category, tag)
-        const { data: existingPref } = await supabase
+      if (normalizedTags.length > 0) {
+        // Batch SELECT: fetch all existing preference scores in one query
+        const { data: existingPrefs } = await supabase
           .from('preferences')
-          .select('score')
+          .select('tag, score')
           .eq('user_id', user.id)
           .eq('category', decision.category)
-          .eq('tag', tagLower)
-          .single()
+          .in('tag', normalizedTags)
 
-        let currentScore = 0.0
-        if (existingPref) {
-          currentScore = Number(existingPref.score)
-        }
+        // Build a lookup map from existing scores
+        const scoreMap: Record<string, number> = {}
+        existingPrefs?.forEach((pref) => {
+          scoreMap[pref.tag] = Number(pref.score)
+        })
 
-        const newScore = calculateNewScore(currentScore, rating as FeedbackRating)
-
-        // Upsert preference
-        const { error: upsertError } = await supabase
-          .from('preferences')
-          .upsert({
+        // Compute new scores and build bulk upsert payload
+        const now = new Date().toISOString()
+        const upsertPayload = normalizedTags.map((tag) => {
+          const currentScore = scoreMap[tag] ?? 0.0
+          const newScore = calculateNewScore(currentScore, rating as FeedbackRating)
+          return {
             user_id: user.id,
             category: decision.category,
-            tag: tagLower,
+            tag,
             score: newScore,
-            updated_at: new Date().toISOString(),
-          }, {
-            onConflict: 'user_id,category,tag'
+            updated_at: now,
+          }
+        })
+
+        // Batch UPSERT: write all preference updates in one query
+        const { error: upsertError } = await supabase
+          .from('preferences')
+          .upsert(upsertPayload, {
+            onConflict: 'user_id,category,tag',
           })
 
         if (upsertError) {
-          console.error(`Failed to upsert preference for tag ${tagLower}:`, upsertError)
+          console.error('Failed to bulk upsert preferences:', upsertError)
         }
       }
     }
@@ -145,10 +156,10 @@ export async function POST(request: NextRequest) {
       success: true,
       feedback: feedbackRecord,
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('POST /api/feedback failed with error:', error)
     return NextResponse.json(
-      { error: error.message || 'An unexpected error occurred.' },
+      { error: error instanceof Error ? error.message : 'An unexpected error occurred.' },
       { status: 500 }
     )
   }

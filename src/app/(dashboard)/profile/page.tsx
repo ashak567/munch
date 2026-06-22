@@ -3,10 +3,11 @@
 import React, { useState, useEffect } from 'react'
 import { createClient } from '@/utils/supabase/client'
 import { logout } from '@/app/auth/actions'
-import { LogOut, User, Mail, ShieldAlert, Award, Edit3, Save, X } from 'lucide-react'
+import { LogOut, Mail, ShieldAlert, Award, Edit3, Save, X } from 'lucide-react'
+import type { User } from '@supabase/supabase-js'
 
 export default function ProfilePage() {
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [showConfirm, setShowConfirm] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
@@ -71,9 +72,9 @@ export default function ProfilePage() {
       setIsEditing(false)
       setFeedbackMsg('Name updated successfully!')
       setTimeout(() => setFeedbackMsg(null), 3000)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err)
-      setFeedbackMsg(err.message || 'Failed to update name')
+      setFeedbackMsg(err instanceof Error ? err.message : 'Failed to update name')
     } finally {
       setUpdating(false)
     }
