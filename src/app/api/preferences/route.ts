@@ -17,11 +17,11 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // 2. Fetch category distribution
-    // Fetch user's decisions category stats
+    // 2. Fetch category and importance distribution
+    // Fetch user's decisions category and importance stats
     const { data: categoryStats, error: catError } = await supabase
       .from('decisions')
-      .select('category')
+      .select('category, importance')
       .eq('user_id', user.id)
 
     if (catError) {
@@ -35,11 +35,17 @@ export async function GET(request: NextRequest) {
       Shopping: 0,
       Other: 0,
     }
+    const importanceDistribution: Record<string, number> = {}
+
     categoryStats?.forEach((d) => {
       if (d.category in categoryDistribution) {
         categoryDistribution[d.category]++
       } else {
         categoryDistribution[d.category] = (categoryDistribution[d.category] || 0) + 1
+      }
+
+      if (d.importance) {
+        importanceDistribution[d.importance] = (importanceDistribution[d.importance] || 0) + 1
       }
     })
 
@@ -88,6 +94,7 @@ export async function GET(request: NextRequest) {
       satisfactionBreakdown,
       totalFeedback,
       preferences: preferences || [],
+      importanceDistribution,
     })
   } catch (error: any) {
     console.error('GET /api/preferences failed:', error)

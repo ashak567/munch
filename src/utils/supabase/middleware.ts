@@ -38,7 +38,7 @@ export async function updateSession(request: NextRequest) {
   // - If user is authenticated and trying to access /login or /register or / (the landing page is public, but let's allow it or redirect them to dashboard? Let's redirect to dashboard if they are already logged in to give a premium app feel)
   const isDashboardRoute = request.nextUrl.pathname.startsWith('/dashboard') || 
                           request.nextUrl.pathname.startsWith('/history') || 
-                          request.nextUrl.pathname.startsWith('/insights') || 
+                          request.nextUrl.pathname.startsWith('/our-conversations') || 
                           request.nextUrl.pathname.startsWith('/profile')
 
   const isAuthRoute = request.nextUrl.pathname.startsWith('/login') || 

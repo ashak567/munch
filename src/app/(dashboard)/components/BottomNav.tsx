@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Sparkles, History, BarChart3, User } from 'lucide-react'
+import { Sparkles, History, MessageSquare, User } from 'lucide-react'
 
 export default function BottomNav() {
   const pathname = usePathname()
@@ -11,7 +11,7 @@ export default function BottomNav() {
   const navItems = [
     { href: '/dashboard', label: 'Munch', icon: Sparkles },
     { href: '/history', label: 'Journal', icon: History },
-    { href: '/insights', label: 'Reflections', icon: BarChart3 },
+    { href: '/our-conversations', label: 'Conversations', icon: MessageSquare },
     { href: '/profile', label: 'Profile', icon: User },
   ]
 
