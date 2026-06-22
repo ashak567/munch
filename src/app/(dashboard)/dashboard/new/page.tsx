@@ -27,7 +27,7 @@ interface Option {
 }
 
 // Step types
-type FlowStep = 'INPUT' | 'SELECTING' | 'RESULT'
+type FlowStep = 'INPUT' | 'IMPORTANCE' | 'SELECTING' | 'RESULT'
 
 // Mock reinforcement databases based on detected category
 const MOCK_REINFORCEMENTS: Record<string, { reasons: string[]; message: string }> = {
@@ -86,6 +86,7 @@ export default function NewDecisionPage() {
   // Custom Mood / Context States (Task 4)
   const [emotionalState, setEmotionalState] = useState('')
   const [currentContext, setCurrentContext] = useState('')
+  const [importance, setImportance] = useState<string>('')
   
   // Selection/Animation States
   const [selectedIndex, setSelectedIndex] = useState<number>(-1)
@@ -221,8 +222,10 @@ export default function NewDecisionPage() {
   }
 
   // Core Pick Selection Flow (Task 3.7)
-  const handlePickForMe = async () => {
+  const handlePickForMe = async (selectedImportance?: string) => {
     if (options.length < 2) return
+
+    const finalImportance = selectedImportance || importance || 'Peace of mind'
 
     setStep('SELECTING')
     setActiveMascot('munch') // reset to munch during selecting animation
@@ -259,6 +262,7 @@ export default function NewDecisionPage() {
       },
       body: JSON.stringify({
         options: options.map(o => o.text),
+        importance: finalImportance,
         emotionalState,
         currentContext,
       }),
@@ -311,7 +315,7 @@ export default function NewDecisionPage() {
 
   // Try Again flow (reshuffles same options)
   const handleTryAgain = () => {
-    handlePickForMe()
+    handlePickForMe(importance)
   }
 
   // Save and finish flow (redirects back to dashboard)
@@ -332,6 +336,8 @@ export default function NewDecisionPage() {
           onClick={() => {
             if (step === 'RESULT') {
               setStep('INPUT')
+            } else if (step === 'IMPORTANCE') {
+              setStep('INPUT')
             } else {
               router.push('/dashboard')
             }
@@ -343,11 +349,13 @@ export default function NewDecisionPage() {
         <div>
           <h2 className="font-display font-extrabold text-2xl text-charcoal">
             {step === 'INPUT' && "What's on your mind today?"}
+            {step === 'IMPORTANCE' && "What matters most right now?"}
             {step === 'SELECTING' && 'Munch is reflecting...'}
             {step === 'RESULT' && "This feels like a lovely path!"}
           </h2>
           <p className="text-2xs text-charcoal/60">
             {step === 'INPUT' && 'Share the options you are weighing'}
+            {step === 'IMPORTANCE' && 'Helping Munch understand your needs'}
             {step === 'SELECTING' && 'Finding a gentle way forward'}
             {step === 'RESULT' && `Reflection: ${detectedCategory}`}
           </p>
@@ -498,6 +506,51 @@ export default function NewDecisionPage() {
           </div>
         )}
 
+        {/* STEP 1.5: IMPORTANCE SELECTION */}
+        {step === 'IMPORTANCE' && (
+          <div className="space-y-6">
+            {/* Mascot asking the question */}
+            <div className="glass-card rounded-3xl p-5 border border-white/50 space-y-4 animate-float-delayed">
+              <div className="flex gap-4 items-center justify-center">
+                <div className="flex-shrink-0">
+                  <Mascot character="munch" expression="idle" size="md" />
+                </div>
+                <div className="flex-1 relative bg-white border border-white/85 rounded-2xl rounded-tl-none p-4 shadow-sm text-charcoal text-xs leading-relaxed">
+                  <p className="font-semibold text-charcoal leading-relaxed">
+                    "What's most important to you right now?"
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Five Cozy Option Buttons */}
+            <div className="flex flex-col gap-3">
+              {[
+                { label: 'Peace of mind', description: 'Help me find quiet comfort and ease my mind.', icon: '🍀' },
+                { label: 'Saving time', description: 'I want to decide quickly and get moving.', icon: '⏱️' },
+                { label: 'Having fun', description: 'Show me something playful, joyful, or lighthearted.', icon: '🎈' },
+                { label: 'Learning something', description: 'I want to discover something new or broaden my horizons.', icon: '📖' },
+                { label: 'Feeling accomplished', description: 'Help me make meaningful progress and build momentum.', icon: '🏆' }
+              ].map((opt) => (
+                <button
+                  key={opt.label}
+                  onClick={() => {
+                    setImportance(opt.label)
+                    handlePickForMe(opt.label)
+                  }}
+                  className="w-full text-left p-4 rounded-2xl border-2 border-charcoal/5 bg-white/40 hover:bg-white/80 active:bg-white text-charcoal transition-all duration-200 cursor-pointer shadow-sm hover:translate-y-[-1px] active:translate-y-[1px] flex items-center gap-4 group"
+                >
+                  <span className="text-2xl group-hover:scale-110 transition-transform">{opt.icon}</span>
+                  <div className="flex-1">
+                    <h3 className="font-bold text-sm text-charcoal leading-tight group-hover:text-primary-dark transition-colors">{opt.label}</h3>
+                    <p className="text-3xs text-charcoal/50 mt-0.5 leading-snug">{opt.description}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* STEP 2: SHUFFLING ANIMATION */}
         {step === 'SELECTING' && (
           <div className="flex-grow flex flex-col items-center justify-center py-12 text-center">
@@ -615,7 +668,7 @@ export default function NewDecisionPage() {
       <div className="pt-6">
         {step === 'INPUT' && (
           <button
-            onClick={handlePickForMe}
+            onClick={() => setStep('IMPORTANCE')}
             disabled={options.length < 2}
             className="w-full py-3.5 btn-clay-primary text-sm flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-all"
           >

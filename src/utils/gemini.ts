@@ -103,10 +103,14 @@ Output must follow this JSON schema:
 /**
  * Task 3.5: Generate positive reinforcement for the selected option.
  */
+/**
+ * Task 3.5: Generate positive reinforcement for the selected option.
+ */
 export async function generateReinforcement(
   selectedOption: string, 
   category: Category,
   context?: {
+    importance?: string
     emotionalState?: string
     userPreferences?: string
     currentContext?: string
@@ -151,38 +155,37 @@ Personality Traits:
 Decision Framework context:
 - Category of options: "${category}"
 - Selected option: "${selectedOption}"
+${context?.importance ? `- What is most important to the user right now: ${context.importance}` : ''}
 ${context?.emotionalState ? `- Emotional state/feeling: ${context.emotionalState}` : ''}
 ${context?.currentContext ? `- Current context: ${context.currentContext}` : ''}
 ${context?.userPreferences ? `- Things that usually bring comfort: ${context.userPreferences}` : ''}
 ${context?.pastDecisions ? `- Past paths chosen: ${context.pastDecisions}` : ''}
 ${context?.feedbackHistory ? `- Past comfort reflections: ${context.feedbackHistory}` : ''}
 
+Response Structure Rules:
+You must structure the reinforcement message according to these four steps:
+1. Reflect feelings: Acknowledge the user's emotional state, context, or the difficulty of choosing (e.g. "I can see why this feels difficult.").
+2. Explain why it feels right: Connect the selected option to what is most important to them right now (e.g., if "Saving time" is important, explain how this option gets them moving quickly).
+3. Reassure the user: Remind them that they don't need a perfect choice (e.g. "You don't need a perfect choice right now.").
+4. Encourage action gently: End with a warm closing or question to encourage them to take a single step.
+
+Tone & Vocabulary Rules:
+- NEVER use words like: AI, analysis, insights, recommendations, scores, rankings, percentages, optimization, productivity, best choice, optimal.
+- Speak naturally and reassuringly. Never sound robotic, analytical, or objective.
+- Keep responses concise. Combined word count target: 60-120 words.
+- Use emojis sparingly (max 1).
+
 Ask yourself:
 - What is Navi feeling right now?
-- Which path aligns with what brings her comfort?
-- Which path reduces friction and quietens the mind?
-- Which option feels like a gentle starting point?
 - Which of the 9 mascots best matches Navi's emotional state right now? If she is overwhelmed/stressed, select 'froggy'. If she is doubting or anxious, select 'ellie'. If she needs encouragement, select 'dobby'.
-
-Response Rules:
-- NEVER use words like: AI, analysis, insights, recommendations, scores, optimization, productivity, best choice, optimal.
-- Use words like: thoughts, feelings, reflections, what matters to you, what feels right, let's figure it out together.
-- Speak naturally and reassuringly. Never sound robotic or corporate.
-
-Tone Guidelines:
-- Keep responses concise.
-- Target word count for reasoning + encouragement + follow_up_question combined: 60–120 words.
-- Use simple language.
-- Use emojis sparingly. Maximum: one emoji per response.
-- Cute means warm, not immature. Never sound childish.
 
 Output Structure:
 You MUST return a JSON response with the following keys:
 {
   "selected_option": "${selectedOption}",
-  "reasoning": "A warm, natural explanation of why this choice feels right for Navi, focusing on comfort, quietness of mind, or ease of starting.",
-  "encouragement": "A gentle, supportive closing line to help her feel at peace.",
-  "follow_up_question": "A simple, friendly question checking in on how she feels about this path.",
+  "reasoning": "Combining steps 1 (reflect feelings) and 2 (explain why it feels right) into a comforting explanation of why this path aligns with what is most important to them.",
+  "encouragement": "Step 3 (reassure the user) that they don't need the perfect choice.",
+  "follow_up_question": "Step 4 (encourage action gently) as a simple, friendly question checking in on how they feel about this path."
   "mascot": "munch" | "ollie" | "ellie" | "pandy" | "dobby" | "coco" | "froggy" | "bubbles" | "chicky"
 }
 `
@@ -285,44 +288,54 @@ function detectMascotFromContext(emotionalState = '', currentContext = ''): stri
 function getFallbackReinforcement(
   selectedOption: string, 
   category: Category,
-  context?: { emotionalState?: string; currentContext?: string }
+  context?: { importance?: string; emotionalState?: string; currentContext?: string }
 ): ReinforcementResult {
-  const genericReasons: Record<Category, { reasoning: string; encouragement: string; follow_up_question: string }> = {
-    Food: {
-      reasoning: "Taking a moment for a cozy meal feels like a beautiful way to care for yourself today. We don't need to hurry or stress—just enjoying something warm is a wonderful place to start.",
-      encouragement: "Let's take a breath and enjoy this. 🍕",
-      follow_up_question: "Does this sound comforting to you?"
-    },
-    Entertainment: {
-      reasoning: "This feels like a lovely, peaceful way to spend some quality time. It asks nothing of you right now, allowing you to just sit back and quiet your thoughts.",
-      encouragement: "I hope this brings a little smile to your day. 🍿",
-      follow_up_question: "Does this feel like a cozy way to spend your evening?"
-    },
-    Activities: {
-      reasoning: "Let's take a single, gentle step together. We don't need to finish everything or make it perfect—simply beginning will help clear the noise.",
-      encouragement: "You don't have to carry the whole mountain today—just one step. 🍀",
-      follow_up_question: "Would you like to try starting this with me?"
-    },
-    Shopping: {
-      reasoning: "This option feels like something that fits nicely into your space and brings a touch of comfort to your day without any second-guessing.",
-      encouragement: "A little comfort is a beautiful thing. 🛍️",
-      follow_up_question: "Does this choice bring you peace of mind?"
-    },
-    Other: {
-      reasoning: "We don't need the perfect answer—just a good place to begin. This path feels gentle and asks very little of you right now.",
-      encouragement: "Let's trust how you feel—it's going to be just fine. 🍀",
-      follow_up_question: "Does this choice feel right to you?"
-    }
+  const emotionalState = context?.emotionalState || ''
+  const currentContextText = context?.currentContext || ''
+  const importance = context?.importance || 'Peace of mind'
+
+  // 1. Reflect feelings
+  let reflectText = "I can see how choosing among these options might feel a bit tricky right now."
+  if (emotionalState) {
+    reflectText = `I hear that you are feeling ${emotionalState.toLowerCase()} right now, which can make deciding feel much harder.`
   }
 
-  const fallback = genericReasons[category] || genericReasons.Other
-  const mascot = detectMascotFromContext(context?.emotionalState, context?.currentContext)
+  // 2. Explain why it feels right based on importance
+  let explainText = "This option feels like a gentle starting point that fits nicely into your rhythm."
+  if (importance === 'Peace of mind') {
+    explainText = `Since peace of mind is what matters most to you today, choosing "${selectedOption}" feels like a wonderful way to bring quiet comfort.`
+  } else if (importance === 'Saving time') {
+    explainText = `Since saving time is important right now, taking the path of "${selectedOption}" lets you move forward quickly and simply.`
+  } else if (importance === 'Having fun') {
+    explainText = `Since you are looking to have some fun, choosing "${selectedOption}" feels like a delightful way to add some playfulness and joy.`
+  } else if (importance === 'Learning something') {
+    explainText = `Since learning is on your mind, starting with "${selectedOption}" offers a beautiful opportunity to discover something new.`
+  } else if (importance === 'Feeling accomplished') {
+    explainText = `Since feeling accomplished is important, taking this step with "${selectedOption}" will give you a satisfying sense of progress.`
+  }
+
+  // 3. Reassure the user
+  const reassureText = "You don't need to make the perfect choice right now."
+
+  // 4. Encourage action gently
+  const encourageText = "How does this path feel to you?"
+
+  const mascot = detectMascotFromContext(emotionalState, currentContextText)
+
+  const emojis: Record<string, string> = {
+    Food: '🍕',
+    Entertainment: '🍿',
+    Activities: '🍀',
+    Shopping: '🛍️',
+    Other: '🍀'
+  }
+  const emoji = emojis[category] || '🍀'
 
   return {
     selected_option: selectedOption,
-    reasoning: fallback.reasoning,
-    encouragement: fallback.encouragement,
-    follow_up_question: fallback.follow_up_question,
+    reasoning: `${reflectText} ${explainText}`,
+    encouragement: `${reassureText} ${emoji}`,
+    follow_up_question: encourageText,
     mascot
   }
 }

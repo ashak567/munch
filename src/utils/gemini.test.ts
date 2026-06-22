@@ -66,7 +66,8 @@ describe('Gemini Integration & Fallback Tests', () => {
       delete process.env.GEMINI_API_KEY
       const result = await generateReinforcement('Fresh Spicy Tuna Sushi', 'Food')
       
-      expect(result.reasoning).toContain('warm is a wonderful place')
+      expect(result.reasoning).toContain('peace of mind')
+      expect(result.reasoning).toContain('Fresh Spicy Tuna Sushi')
       expect(result.encouragement).toContain('🍕')
       expect(result.follow_up_question).toBeDefined()
     })
@@ -75,9 +76,21 @@ describe('Gemini Integration & Fallback Tests', () => {
       delete process.env.GEMINI_API_KEY
       const result = await generateReinforcement('Fix chair', 'Other')
       
-      expect(result.reasoning).toContain('good place to begin')
+      expect(result.reasoning).toContain('peace of mind')
+      expect(result.reasoning).toContain('Fix chair')
       expect(result.encouragement).toContain('🍀')
       expect(result.follow_up_question).toBeDefined()
+    })
+
+    it('should support custom importance context in fallback generation', async () => {
+      delete process.env.GEMINI_API_KEY
+      const result = await generateReinforcement('Read a book', 'Activities', {
+        importance: 'Saving time'
+      })
+
+      expect(result.reasoning).toContain('saving time')
+      expect(result.reasoning).toContain('Read a book')
+      expect(result.reasoning).toContain('quickly and simply')
     })
   })
 

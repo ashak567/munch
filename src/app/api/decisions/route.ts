@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
     // 2. Parse and validate options list
     const body = await request.json()
-    const { options } = body
+    const { options, importance } = body
 
     if (!options || !Array.isArray(options) || options.length < 2) {
       return NextResponse.json(
@@ -152,6 +152,7 @@ export async function POST(request: NextRequest) {
 
     // 6. AI Positive Reinforcement Generation (Munch Personality Engine)
     const reinforcement = await generateReinforcement(selectedOption.text, category, {
+      importance,
       emotionalState,
       currentContext,
       userPreferences: userPreferencesText,
@@ -172,6 +173,7 @@ export async function POST(request: NextRequest) {
         encouragement: reinforcement.encouragement,
         follow_up_question: reinforcement.follow_up_question,
         mascot: reinforcement.mascot || 'munch',
+        importance: importance || null,
       })
       .select()
       .single()
@@ -255,7 +257,7 @@ export async function GET(request: NextRequest) {
     // 3. Fetch decisions paginated
     const { data: decisions, error: decisionsError, count } = await supabase
       .from('decisions')
-      .select('id, category, selected_option, reinforcement_message, reasoning, encouragement, follow_up_question, mascot, created_at', { count: 'exact' })
+      .select('id, category, selected_option, reinforcement_message, reasoning, encouragement, follow_up_question, mascot, importance, created_at', { count: 'exact' })
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .range(offset, offset + limit - 1)
@@ -326,6 +328,7 @@ export async function GET(request: NextRequest) {
       encouragement: d.encouragement,
       followUpQuestion: d.follow_up_question,
       mascot: d.mascot || 'munch',
+      importance: d.importance || null,
       createdAt: d.created_at,
       options: optionsMap[d.id] || [],
       rating: feedbackMap[d.id] || null,
