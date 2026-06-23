@@ -5,12 +5,15 @@ import { createClient } from '@/utils/supabase/client'
 import { logout } from '@/app/auth/actions'
 import { LogOut, Mail, ShieldAlert, Award, Edit3, Save, X } from 'lucide-react'
 import type { User } from '@supabase/supabase-js'
+import HUPSPanel from './HUPSPanel'
+import MemoryPanel from './MemoryPanel'
 
 export default function ProfilePage() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [showConfirm, setShowConfirm] = useState(false)
   const [loggingOut, setLoggingOut] = useState(false)
+  const [activeTab, setActiveTab] = useState<'profile' | 'hups' | 'memory'>('profile')
 
   // Stats and editing states
   const [stats, setStats] = useState({ totalDecisions: 0, favoriteCategory: 'None yet' })
@@ -111,12 +114,48 @@ export default function ProfilePage() {
           Your Profile
         </h1>
         <p className="text-sm text-charcoal/60 mt-1">
-          Manage your account and preferences.
+          Manage your account and cognitive profile.
         </p>
       </div>
 
-      {/* Profile Details Card */}
-      <div className="glass-panel rounded-3xl p-6 shadow-xl mb-6 flex flex-col items-center text-center">
+      {/* Tabs */}
+      <div className="flex gap-2 mb-6 bg-white/40 p-1 rounded-2xl border border-white/50 w-full max-w-md">
+        <button
+          onClick={() => setActiveTab('profile')}
+          className={`flex-1 py-2 px-3 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${
+            activeTab === 'profile'
+              ? 'bg-white text-charcoal shadow-sm border border-charcoal/5'
+              : 'text-charcoal/60 hover:text-charcoal'
+          }`}
+        >
+          Settings
+        </button>
+        <button
+          onClick={() => setActiveTab('hups')}
+          className={`flex-1 py-2 px-3 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${
+            activeTab === 'hups'
+              ? 'bg-white text-charcoal shadow-sm border border-charcoal/5'
+              : 'text-charcoal/60 hover:text-charcoal'
+          }`}
+        >
+          Understanding
+        </button>
+        <button
+          onClick={() => setActiveTab('memory')}
+          className={`flex-1 py-2 px-3 rounded-xl text-[11px] font-bold transition-all cursor-pointer ${
+            activeTab === 'memory'
+              ? 'bg-white text-charcoal shadow-sm border border-charcoal/5'
+              : 'text-charcoal/60 hover:text-charcoal'
+          }`}
+        >
+          Memory Lane
+        </button>
+      </div>
+
+      {activeTab === 'profile' ? (
+        <>
+          {/* Profile Details Card */}
+          <div className="glass-panel rounded-3xl p-6 shadow-xl mb-6 flex flex-col items-center text-center">
         {/* Large Avatar */}
         <div className="w-24 h-24 rounded-full bg-secondary text-secondary-dark flex items-center justify-center font-bold text-3xl border-4 border-white shadow-md mb-4 relative">
           {userInitial}
@@ -198,26 +237,32 @@ export default function ProfilePage() {
         </button>
       </div>
 
-      {/* Preferences / Account Info */}
-      <div className="glass-card rounded-2xl p-5 border border-white/50 text-xs text-charcoal/70 space-y-3">
-        <div className="flex justify-between items-center pb-2 border-b border-charcoal/10 font-bold text-charcoal">
-          <span>ACCOUNT STATS</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Decisions made</span>
-          <span className="font-bold text-charcoal">{stats.totalDecisions}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Favorite Category</span>
-          <span className="font-bold text-charcoal capitalize">{stats.favoriteCategory}</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Member since</span>
-          <span className="font-bold text-charcoal">
-            {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'Today'}
-          </span>
-        </div>
-      </div>
+          {/* Preferences / Account Info */}
+          <div className="glass-card rounded-2xl p-5 border border-white/50 text-xs text-charcoal/70 space-y-3">
+            <div className="flex justify-between items-center pb-2 border-b border-charcoal/10 font-bold text-charcoal">
+              <span>ACCOUNT STATS</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Decisions made</span>
+              <span className="font-bold text-charcoal">{stats.totalDecisions}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Favorite Category</span>
+              <span className="font-bold text-charcoal capitalize">{stats.favoriteCategory}</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Member since</span>
+              <span className="font-bold text-charcoal">
+                {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'Today'}
+              </span>
+            </div>
+          </div>
+        </>
+      ) : activeTab === 'hups' ? (
+        <HUPSPanel userId={user?.id || ''} />
+      ) : (
+        <MemoryPanel userId={user?.id || ''} />
+      )}
 
       {/* Confirmation Modal */}
       {showConfirm && (

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
 import { calculateNewScore, type FeedbackRating } from '@/utils/preferences'
+import { analyzeAndLogObservations } from '@/lib/hup/analyzer'
+import { analyzeAndDistillMemories } from '@/lib/memory/distiller'
 
 export async function POST(request: NextRequest) {
   try {
@@ -40,7 +42,7 @@ export async function POST(request: NextRequest) {
     // 3. Fetch decision record and check ownership
     const { data: decision, error: decisionError } = await supabase
       .from('decisions')
-      .select('id, user_id, category, selected_option')
+      .select('id, user_id, category, selected_option, importance')
       .eq('id', decisionId)
       .single()
 
@@ -151,6 +153,22 @@ export async function POST(request: NextRequest) {
         }
       }
     }
+
+    // Trigger HUPS Analysis asynchronously (non-blocking)
+    const feedbackPayload = {
+      decision: {
+        selected_option: decision.selected_option,
+        category: decision.category,
+        importance: decision.importance
+      },
+      rating: rating,
+      tags: selectedOptionTags
+    };
+    analyzeAndLogObservations(user.id, 'feedback', feedbackRecord.id, feedbackPayload)
+      .catch((err) => console.error('HUPS Feedback Analysis error:', err));
+
+    analyzeAndDistillMemories(user.id, 'feedback', feedbackRecord.id, feedbackPayload)
+      .catch((err) => console.error('Memory Distillation error:', err));
 
     return NextResponse.json({
       success: true,

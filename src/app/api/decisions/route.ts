@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/utils/supabase/server'
-import { classifyOptions, generateReinforcement } from '@/utils/gemini'
+import { classifyOptions, generateReinforcement, generateReinforcementWithReasoning } from '@/utils/gemini'
+import { analyzeAndLogObservations } from '@/lib/hup/analyzer'
+import { analyzeAndDistillMemories } from '@/lib/memory/distiller'
+import { MunchContextBuilder } from '@/lib/context/builder'
 
 // Type definition for preference scores from database
 interface PreferenceRow {
@@ -154,15 +157,23 @@ export async function POST(request: NextRequest) {
     const emotionalState = body.emotionalState || ''
     const currentContext = body.currentContext || ''
 
-    // 6. AI Positive Reinforcement Generation (Munch Personality Engine)
-    const reinforcement = await generateReinforcement(selectedOption.text, category, {
+    // 6. Run Munch Context Builder (Foundation Layer 4)
+    const contextBuilder = new MunchContextBuilder()
+    const reasoningPackage = await contextBuilder.buildContextAndOrchestrate({
+      user_id: user.id,
+      user_input: selectedOption.text,
+      options: trimmedOptions,
       importance,
-      emotionalState,
-      currentContext,
-      userPreferences: userPreferencesText,
-      pastDecisions: pastDecisionsText,
-      feedbackHistory: feedbackHistoryText,
+      emotional_state: emotionalState,
+      current_context: currentContext
     })
+
+    // AI Positive Reinforcement Generation (Munch Personality Engine) using reasoning
+    const reinforcement = await generateReinforcementWithReasoning(
+      reasoningPackage,
+      selectedOption.text,
+      category
+    )
 
     // 7. Save Decision to Database (Task 3.3)
     // Insert decision record
@@ -207,6 +218,21 @@ export async function POST(request: NextRequest) {
       console.error('Failed to insert options records:', optionsError)
       // Non-blocking but warn: we won't crash the response since the decision is saved
     }
+
+    // Trigger HUPS Analysis asynchronously (non-blocking)
+    const decisionPayload = {
+      selected_option: selectedOption.text,
+      category,
+      options: trimmedOptions,
+      importance,
+      currentContext,
+      emotionalState
+    };
+    analyzeAndLogObservations(user.id, 'decision', decisionRecord.id, decisionPayload)
+      .catch((err) => console.error('HUPS Decision Analysis error:', err));
+
+    analyzeAndDistillMemories(user.id, 'decision', decisionRecord.id, decisionPayload)
+      .catch((err) => console.error('Memory Distillation error:', err));
 
     // 8. Return Response JSON
     return NextResponse.json({

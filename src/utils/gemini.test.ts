@@ -1,5 +1,6 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
-import { classifyOptions, generateReinforcement } from './gemini'
+import { classifyOptions, generateReinforcement, generateReinforcementWithReasoning } from './gemini'
+import { ReasoningPackage } from '../lib/orchestrator/types'
 
 // Mock GoogleGenerativeAI
 const mockGenerateContent = vi.fn()
@@ -92,6 +93,30 @@ describe('Gemini Integration & Fallback Tests', () => {
       expect(result.reasoning).toContain('Read a book')
       expect(result.reasoning).toContain('quickly and simply')
     })
+
+    it('should generate fallback reinforcement message with reasoning package', async () => {
+      delete process.env.GEMINI_API_KEY
+      const reasoningPackage: ReasoningPackage = {
+        context: {
+          user_id: 'user_123',
+          user_input: 'Eat Pizza',
+          options: ['Eat Pizza', 'Eat Salad'],
+          importance: 'Saving time',
+          profile_beliefs: [],
+          relevant_memories: []
+        },
+        observations: [],
+        conflicts: [],
+        uncertainties: []
+      }
+
+      const result = await generateReinforcementWithReasoning(reasoningPackage, 'Eat Pizza', 'Food')
+      
+      expect(result.reasoning).toContain('saving time')
+      expect(result.reasoning).toContain('Eat Pizza')
+      expect(result.encouragement).toContain('🍕')
+      expect(result.follow_up_question).toBeDefined()
+    })
   })
 
   describe('Primary AI Pipeline (With API Key & Mocked Responses)', () => {
@@ -138,6 +163,45 @@ describe('Gemini Integration & Fallback Tests', () => {
       })
 
       const result = await generateReinforcement('Buy shoes', 'Shopping')
+
+      expect(result.reasoning).toBe('Reason one and Reason two.')
+      expect(result.encouragement).toContain('🎉')
+      expect(result.follow_up_question).toBe('How do you feel?')
+      expect(result.mascot).toBe('ollie')
+      expect(mockGenerateContent).toHaveBeenCalledTimes(1)
+    })
+
+    it('should call Gemini API and parse response for reinforcement with reasoning', async () => {
+      process.env.GEMINI_API_KEY = 'test_key'
+
+      const mockResult = {
+        selected_option: 'Buy shoes',
+        reasoning: 'Reason one and Reason two.',
+        encouragement: 'Supportive statement! 🎉',
+        follow_up_question: 'How do you feel?',
+        mascot: 'ollie'
+      }
+
+      mockGenerateContent.mockResolvedValueOnce({
+        response: {
+          text: () => JSON.stringify(mockResult)
+        }
+      })
+
+      const reasoningPackage: ReasoningPackage = {
+        context: {
+          user_id: 'user_123',
+          user_input: 'Buy shoes',
+          options: ['Buy shoes', 'Buy pants'],
+          profile_beliefs: [],
+          relevant_memories: []
+        },
+        observations: [],
+        conflicts: [],
+        uncertainties: []
+      }
+
+      const result = await generateReinforcementWithReasoning(reasoningPackage, 'Buy shoes', 'Shopping')
 
       expect(result.reasoning).toBe('Reason one and Reason two.')
       expect(result.encouragement).toContain('🎉')
