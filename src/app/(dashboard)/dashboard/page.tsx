@@ -11,14 +11,22 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'friend'
+  let greetingName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'friend'
+  if (user) {
+    try {
+      const { getGreetingName } = await import('@/lib/nickname/service')
+      greetingName = await getGreetingName(user.id)
+    } catch (err) {
+      console.error('Failed to get greeting name:', err)
+    }
+  }
 
   return (
     <div className="flex-grow flex flex-col items-center justify-center py-6 text-center">
       {/* Hello Greeting Header */}
       <div className="mb-4">
         <h1 className="font-display text-4xl font-extrabold text-charcoal tracking-tight">
-          Hello, {userName}!
+          Hello, {greetingName}!
         </h1>
         <p className="text-sm text-charcoal/60 mt-1">
           Take a breath. Let&apos;s find what feels right today.

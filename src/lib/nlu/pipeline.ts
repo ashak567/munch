@@ -26,9 +26,10 @@ export async function runNLUPipeline(context: ContextPackage): Promise<NLUObserv
     }
   });
 
+  const nickname = context.user_nickname || 'the user';
   const prompt = `
 You are Layer 1 (Companion Natural Language Understanding Engine) of the Munch Cognitive Architecture.
-Munch is a gentle four-leaf clover companion that helps Navi slow down, understand her thoughts, and make decisions she feels comfortable with.
+Munch is a gentle four-leaf clover companion that helps ${nickname} slow down, understand their thoughts, and make decisions they feel comfortable with.
 
 CRITICAL ROLE BOUNDARIES:
 - You ONLY generate structured observations.

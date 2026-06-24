@@ -4,6 +4,7 @@ import { classifyOptions, generateReinforcement, generateReinforcementWithReason
 import { analyzeAndLogObservations } from '@/lib/hup/analyzer'
 import { analyzeAndDistillMemories } from '@/lib/memory/distiller'
 import { MunchContextBuilder } from '@/lib/context/builder'
+import { selectNickname } from '@/lib/nickname/service'
 
 // Type definition for preference scores from database
 interface PreferenceRow {
@@ -196,6 +197,19 @@ export async function POST(request: NextRequest) {
     const emotionalState = body.emotionalState || ''
     const currentContext = body.currentContext || ''
 
+    // ── STAGE 6b: Resolve Nickname ──
+    currentStage = '6b-SELECT-NICKNAME'
+    logStage(currentStage, 'STARTED')
+    let activeNickname = 'friend'
+    try {
+      activeNickname = await selectNickname(user.id)
+      logStage(currentStage, 'SUCCESS', { activeNickname })
+    } catch (nickErr) {
+      logStage(currentStage, 'FAILED', { error: nickErr instanceof Error ? nickErr.message : String(nickErr) })
+    }
+
+    const userName = user.user_metadata?.full_name || user.email?.split('@')[0] || 'friend'
+
     // ── STAGE 7: Context Builder + Orchestration ──
     // CRITICAL: This is wrapped in try-catch so cognitive layer failures
     // don't block the core decision flow.
@@ -233,7 +247,9 @@ export async function POST(request: NextRequest) {
         reinforcement = await generateReinforcementWithReasoning(
           reasoningPackage,
           selectedOption.text,
-          category
+          category,
+          activeNickname,
+          userName
         )
       } else {
         // Fallback: use basic reinforcement without reasoning package
@@ -246,7 +262,9 @@ export async function POST(request: NextRequest) {
             currentContext,
             userPreferences: userPreferencesText,
             pastDecisions: pastDecisionsText,
-            feedbackHistory: feedbackHistoryText
+            feedbackHistory: feedbackHistoryText,
+            userNickname: activeNickname,
+            userName
           }
         )
       }
@@ -284,6 +302,7 @@ export async function POST(request: NextRequest) {
       follow_up_question: reinforcement.follow_up_question || null,
       mascot: reinforcement.mascot || 'munch',
       importance: importance || null,
+      nickname_snapshot: activeNickname
     }
 
     logStage(currentStage, 'STARTED', {

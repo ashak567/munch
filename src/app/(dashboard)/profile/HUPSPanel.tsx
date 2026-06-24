@@ -126,7 +126,7 @@ export default function HUPSPanel({ userId }: HUPSPanelProps) {
         </div>
       </div>
 
-      {/* Narrative Section (Live story Navi is living) */}
+      {/* Narrative Section (Live story you are living) */}
       {narrativeBeliefs.length > 0 && (
         <div className="glass-panel rounded-3xl p-5 border border-white/60">
           <div className="flex items-center gap-2 mb-3 text-secondary-dark">

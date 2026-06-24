@@ -28,6 +28,15 @@ export async function signup(state: unknown, formData: FormData) {
     return { error: error.message }
   }
 
+  if (data?.user) {
+    try {
+      const { initializeUserNicknames } = await import('@/lib/nickname/service')
+      await initializeUserNicknames(data.user.id, name)
+    } catch (nickErr) {
+      console.error('Failed to initialize user nicknames during signup:', nickErr)
+    }
+  }
+
   if (data?.session) {
     redirect('/dashboard')
   } else {

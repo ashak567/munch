@@ -241,6 +241,22 @@ export class MunchContextBuilder {
         };
       });
 
+    // Fetch user name and active nickname
+    const { data: userRecord } = await supabase
+      .from('users')
+      .select('name')
+      .eq('id', params.user_id)
+      .single();
+    const userName = userRecord?.name || 'friend';
+
+    const { data: activeNick } = await supabase
+      .from('nickname_affinity')
+      .select('nickname')
+      .eq('user_id', params.user_id)
+      .eq('is_active', true)
+      .limit(1);
+    const userNickname = activeNick && activeNick.length > 0 ? activeNick[0].nickname : userName;
+
     // Generate recent interactions summary (context compression)
     const summaryLines = selectedDecisions.map(d => 
       `- Chose "${d.selected_option}" in ${d.category} (Rating: ${d.rating || 'none'})`
@@ -252,6 +268,8 @@ export class MunchContextBuilder {
     return {
       user_id: params.user_id,
       user_input: params.user_input,
+      user_name: userName,
+      user_nickname: userNickname,
       options: params.options,
       importance: params.importance,
       emotional_state: params.emotional_state,

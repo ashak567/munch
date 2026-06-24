@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     // 3. Fetch decision record and check ownership
     const { data: decision, error: decisionError } = await supabase
       .from('decisions')
-      .select('id, user_id, category, selected_option, importance')
+      .select('id, user_id, category, selected_option, importance, nickname_snapshot')
       .eq('id', decisionId)
       .single()
 
@@ -90,6 +90,20 @@ export async function POST(request: NextRequest) {
         { error: 'Failed to record feedback.' },
         { status: 500 }
       )
+    }
+
+    // Update nickname affinity if a nickname snapshot was used
+    if (decision.nickname_snapshot) {
+      try {
+        const { updateNicknameAffinity } = await import('@/lib/nickname/service')
+        let reaction: 'love' | 'okay' | 'dislike' = 'okay'
+        if (rating === 'love') reaction = 'love'
+        else if (rating === 'meh') reaction = 'dislike'
+        
+        await updateNicknameAffinity(user.id, decision.nickname_snapshot, reaction)
+      } catch (nickErr) {
+        console.error('Failed to update nickname affinity from feedback:', nickErr)
+      }
     }
 
     // 5. Query the selected option to fetch its tags

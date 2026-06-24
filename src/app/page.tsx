@@ -14,27 +14,6 @@ export default async function LandingPage() {
 
 
 
-  const testimonials = [
-    {
-      quote: "My partner and I used to worry about dinners. Now, sitting down with Munch helps us slow down and find what we both feel like having. It's brought so much peace to our kitchen.",
-      author: "Chloe & David",
-      role: "Mealtime Overthinkers",
-      stars: 5
-    },
-    {
-      quote: "I used to spend an hour scrolling. Now, Showtime Munch helps me quiet the chatter and find the cozy evening I actually wanted.",
-      author: "Marcus K.",
-      role: "Movie Enthusiast",
-      stars: 5
-    },
-    {
-      quote: "When study stress starts piling up, talking with Coach Munch helps me take a breath and pick a small starting point I'm comfortable with.",
-      author: "Linnea S.",
-      role: "Student",
-      stars: 5
-    }
-  ]
-
   return (
     <div className="flex-grow flex flex-col bg-cream relative overflow-hidden">
       {/* Background Clover Particle System */}
@@ -166,34 +145,7 @@ export default async function LandingPage() {
           </div>
         </div>
 
-        {/* Testimonials */}
-        <div className="w-full space-y-4">
-          <h3 className="font-display font-black text-xl text-charcoal text-center">
-            Loved by Overthinkers
-          </h3>
-          
-          <div className="space-y-4">
-            {testimonials.map((t, idx) => (
-              <div 
-                key={idx}
-                className="glass-card rounded-2xl p-4 border border-white/50 space-y-2.5 shadow-sm text-left"
-              >
-                <div className="flex gap-1">
-                  {[...Array(t.stars)].map((_, i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-yellow text-yellow-700" />
-                  ))}
-                </div>
-                <p className="text-xs text-charcoal/80 leading-relaxed italic">
-                  &ldquo;{t.quote}&rdquo;
-                </p>
-                <div className="flex justify-between items-center text-3xs font-bold text-charcoal/50">
-                  <span>{t.author}</span>
-                  <span>{t.role}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+
 
         {/* Final CTA glass panel */}
         <div className="w-full glass-panel border-2 border-primary/20 rounded-3xl p-6 text-center space-y-4 shadow-md relative overflow-hidden">

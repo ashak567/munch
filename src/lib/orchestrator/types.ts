@@ -4,6 +4,8 @@ import { UserMemory } from '../memory/types';
 export interface ContextPackage {
   user_id: string;
   user_input: string;
+  user_name?: string;
+  user_nickname?: string;
   options: string[];
   importance?: string;
   emotional_state?: string;

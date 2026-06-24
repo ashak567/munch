@@ -190,7 +190,7 @@ describe('Munch Orchestrator Service Tests', () => {
             agent_name: 'Custom Agent',
             type: 'reasoning_hypothesis',
             key: 'custom_insight',
-            value: 'Navi is trying to build a routine',
+            value: 'user is trying to build a routine',
             confidence: 0.85,
             reasoning: 'Based on repetitive daily actions'
           }
@@ -220,6 +220,6 @@ describe('Munch Orchestrator Service Tests', () => {
     expect(result.observations).toHaveLength(2);
     const customObs = result.observations.find(o => o.agent_name === 'Custom Agent');
     expect(customObs).toBeDefined();
-    expect(customObs!.value).toBe('Navi is trying to build a routine');
+    expect(customObs!.value).toBe('user is trying to build a routine');
   });
 });

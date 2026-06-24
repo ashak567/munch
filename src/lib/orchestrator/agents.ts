@@ -66,9 +66,10 @@ export async function runSharedPipeline(
     generationConfig: { responseMimeType: 'application/json' }
   });
 
+  const nickname = context.user_nickname || 'the user';
   const prompt = `
 You are the central nervous system (Shared Reasoning Pipeline) for Munch 🍀.
-Munch is a gentle four-leaf clover companion that helps Navi slow down, understand her thoughts, and make decisions she feels comfortable with.
+Munch is a gentle four-leaf clover companion that helps ${nickname} slow down, understand their thoughts, and make decisions they feel comfortable with.
 
 We are running the following virtual analysis agents on the user's current situation:
 ${agents.map(a => `- ${a.name}: Generates structured observations for its cognitive domain.`).join('\n')}

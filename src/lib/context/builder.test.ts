@@ -7,6 +7,28 @@ import {
 } from './builder';
 import { AgentObservation } from '../orchestrator/types';
 
+// Mock GoogleGenerativeAI
+const mockGenerateContent = vi.fn().mockResolvedValue({
+  response: {
+    text: () => JSON.stringify({
+      active_topics: ['academic', 'exam', 'study', 'stress'],
+      intent_hints: ['stressed about performance', 'needs focus']
+    })
+  }
+});
+
+vi.mock('@google/generative-ai', () => {
+  return {
+    GoogleGenerativeAI: class {
+      getGenerativeModel() {
+        return {
+          generateContent: mockGenerateContent
+        };
+      }
+    }
+  };
+});
+
 // Mock getProfile from HUPS
 const mockBeliefs = [
   {
@@ -75,7 +97,7 @@ const mockMemoriesData = [
     id: 'mem_1',
     user_id: 'user_123',
     memory_type: 'episodic',
-    summary: 'Navi felt anxious during the math exam last month',
+    summary: 'User felt anxious during the math exam last month',
     confidence: 0.9,
     importance: 0.8,
     relevance_score: 1.0,
@@ -86,7 +108,7 @@ const mockMemoriesData = [
     id: 'mem_2',
     user_id: 'user_123',
     memory_type: 'semantic',
-    summary: 'Navi prefers sweet snacks like donuts when study fatigue sets in',
+    summary: 'User prefers sweet snacks like donuts when study fatigue sets in',
     confidence: 0.85,
     importance: 0.7,
     relevance_score: 1.0,
@@ -116,13 +138,16 @@ const mockFeedbackData = [
 vi.mock('@/utils/supabase/server', () => {
   const mockSupabase = {
     from: vi.fn().mockImplementation((table) => {
-      return {
+      const builder = {
         select: vi.fn().mockReturnThis(),
         eq: vi.fn().mockReturnThis(),
         order: vi.fn().mockReturnThis(),
-        limit: vi.fn().mockImplementation((limitVal) => {
+        limit: vi.fn().mockImplementation(() => {
           if (table === 'decisions') {
             return Promise.resolve({ data: mockDecisionsData, error: null });
+          }
+          if (table === 'nickname_affinity') {
+            return Promise.resolve({ data: [{ nickname: 'stargazer' }], error: null });
           }
           return Promise.resolve({ data: [], error: null });
         }),
@@ -132,13 +157,23 @@ vi.mock('@/utils/supabase/server', () => {
           }
           return Promise.resolve({ data: [], error: null });
         }),
+        single: vi.fn().mockImplementation(() => {
+          if (table === 'users') {
+            return Promise.resolve({ data: { name: 'Ash' }, error: null });
+          }
+          return Promise.resolve({ data: null, error: null });
+        }),
         then: (onfulfilled: any) => {
           if (table === 'user_memories') {
             return Promise.resolve({ data: mockMemoriesData, error: null }).then(onfulfilled);
           }
+          if (table === 'users') {
+            return Promise.resolve({ data: { name: 'Ash' }, error: null }).then(onfulfilled);
+          }
           return Promise.resolve({ data: [], error: null }).then(onfulfilled);
         }
       };
+      return builder;
     })
   };
   return {
