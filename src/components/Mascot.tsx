@@ -387,11 +387,22 @@ export default function Mascot({
         ease: 'easeInOut' as const,
       },
     },
+    think: {
+      y: [0, -1.5, 0],
+      rotate: [-2.5, 2.5, -2.5],
+      scale: [1, 1.02, 1],
+      transition: {
+        duration: 4.0,
+        repeat: Infinity,
+        ease: 'easeInOut' as const,
+      },
+    },
   }
 
   const getAnimationVariant = () => {
     if (expression === 'happy') return 'celebrate'
     if (expression === 'wry') return 'sway'
+    if (expression === 'think') return 'think'
     return 'float'
   }
 

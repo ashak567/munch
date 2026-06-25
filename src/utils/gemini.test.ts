@@ -103,7 +103,8 @@ describe('Gemini Integration & Fallback Tests', () => {
           options: ['Eat Pizza', 'Eat Salad'],
           importance: 'Saving time',
           profile_beliefs: [],
-          relevant_memories: []
+          relevant_memories: [],
+          decision_history: []
         },
         observations: [],
         conflicts: [],
@@ -194,7 +195,8 @@ describe('Gemini Integration & Fallback Tests', () => {
           user_input: 'Buy shoes',
           options: ['Buy shoes', 'Buy pants'],
           profile_beliefs: [],
-          relevant_memories: []
+          relevant_memories: [],
+          decision_history: []
         },
         observations: [],
         conflicts: [],

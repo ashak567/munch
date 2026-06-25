@@ -1,10 +1,11 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import { analyzeContextFallback } from './fallback';
+import { analyzeContextFallback as realAnalyzeContextFallback } from './fallback';
 import { runNLUPipeline } from './pipeline';
 import { NLUEngine } from './service';
-import { ContextPackage } from '../orchestrator/types';
-import { getEvidenceSourceQuality, applyContextHierarchy, resolveContradictions, resolveNLUObservations } from './resolver';
+import { getEvidenceSourceQuality, applyContextHierarchy, resolveContradictions as realResolveContradictions, resolveNLUObservations as realResolveNLUObservations } from './resolver';
 import { NLUObservationsOutput, NLUHistoryItem } from './types';
+
+type ContextPackage = any;
 
 // Mock serverEnv
 vi.mock('@/lib/env', () => ({
@@ -44,6 +45,52 @@ vi.mock('@google/generative-ai', () => {
     }
   };
 });
+const mockContext = (partial: any): any => ({
+  user_id: 'user_123',
+  user_input: '',
+  options: [],
+  profile_beliefs: [],
+  relevant_memories: [],
+  decision_history: [],
+  ...partial
+});
+
+const mockObservations = (partial: any): any => ({
+  meanings: [],
+  topics: [],
+  entities: [],
+  ambiguities: [],
+  assumptions: [],
+  missing_info: [],
+  hidden_meanings: [],
+  communication_purposes: [],
+  state_signals: [],
+  dynamics: [],
+  curiosity_triggers: [],
+  decision_context: [],
+  perspectives: [],
+  certainties: [],
+  goals: [],
+  obstacles: [],
+  stakeholders: [],
+  importances: [],
+  relationship_references: [],
+  reflections: [],
+  readiness_signals: [],
+  ...partial
+});
+
+const analyzeContextFallback = (context: any): NLUObservationsOutput => {
+  return realAnalyzeContextFallback(mockContext(context));
+};
+
+const resolveContradictions = (observations: any, context: any): NLUObservationsOutput => {
+  return realResolveContradictions(mockObservations(observations), mockContext(context));
+};
+
+const resolveNLUObservations = (observations: any, context: any, history: any[]): NLUObservationsOutput => {
+  return realResolveNLUObservations(mockObservations(observations), mockContext(context), history);
+};
 
 describe('NLU Engine - Local Fallback Parser', () => {
   it('should extract fatigue meanings and signals from "I am tired"', () => {
@@ -318,7 +365,7 @@ describe('NLU Engine - Cognitive Architecture Safeguards & Rules', () => {
   });
 
   it('should suppress historical anxiety/fatigue signals when current input explicitly signals calm', () => {
-    const raw: NLUObservationsOutput = {
+    const raw: any = {
       meanings: [],
       topics: [],
       entities: [],
@@ -349,7 +396,7 @@ describe('NLU Engine - Cognitive Architecture Safeguards & Rules', () => {
     // Apply context hierarchy (simulated step)
     const rawWithHierarchy = {
       ...raw,
-      state_signals: raw.state_signals.map(s => ({
+      state_signals: raw.state_signals.map((s: any) => ({
         ...s,
         confidence: applyContextHierarchy(s.confidence, s.evidence) // 0.8 * 0.7 = 0.56
       }))
@@ -367,7 +414,7 @@ describe('NLU Engine - Cognitive Architecture Safeguards & Rules', () => {
   });
 
   it('should boost confidence of recurrent topics/signals and track drift', () => {
-    const raw: NLUObservationsOutput = {
+    const raw: any = {
       meanings: [],
       topics: [{ topic: 'career', confidence: 0.7, evidence: 'Derived from: user_input' }],
       entities: [],
@@ -417,7 +464,7 @@ describe('NLU Engine - Cognitive Architecture Safeguards & Rules', () => {
   });
 
   it('should cap hidden meaning confidence, preserve uncertainty, and threshold filter', () => {
-    const raw: NLUObservationsOutput = {
+    const raw: any = {
       meanings: [
         { possible_meanings: [], confidence: 0.2, evidence: 'Derived from: user_input' } // Should be filtered out (<0.3)
       ],
@@ -452,7 +499,7 @@ describe('NLU Engine - Cognitive Architecture Safeguards & Rules', () => {
   });
 
   it('should filter out redundant curiosity triggers and prioritize them by confidence', () => {
-    const raw: NLUObservationsOutput = {
+    const raw: any = {
       meanings: [],
       topics: [],
       entities: [],
@@ -605,7 +652,7 @@ describe('NLU Engine - 10 Cognitive Expansion Detections', () => {
   });
 
   it('should age NLU observations and weight recent ones stronger than old ones', () => {
-    const raw: NLUObservationsOutput = {
+    const raw: any = {
       meanings: [
         {
           possible_meanings: [{ interpretation: 'physical exhaustion', confidence: 0.6 }],

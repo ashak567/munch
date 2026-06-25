@@ -25,7 +25,7 @@ export interface ContextPackage {
   // Layer 3 compatibility
   profile_beliefs: HUPSBelief[];
   relevant_memories: UserMemory[];
-  decision_history?: any[];
+  decision_history: any[];
 
   // Layer 4 Refined attention signals
   profile_signals: HUPSBelief[];
@@ -34,7 +34,9 @@ export interface ContextPackage {
   recent_context: {
     active_topics: string[];
     intent_hints: string[];
-    summary_of_recent_interactions?: string;
+    summary_of_recent_interactions: string;
   };
   uncertainties: UncertaintySignal[];
+  chatHistory?: any[];
+  [key: string]: any;
 }

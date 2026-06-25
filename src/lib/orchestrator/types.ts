@@ -13,8 +13,10 @@ export interface ContextPackage {
   profile_beliefs: HUPSBelief[];
   relevant_memories: UserMemory[];
   recent_conversations?: any[];
-  decision_history?: any[];
+  decision_history: any[];
   active_observations?: any[];
+  chatHistory?: any[];
+  [key: string]: any;
 }
 
 export type ObservationType =
