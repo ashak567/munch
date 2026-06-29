@@ -7,6 +7,18 @@ import {
 } from './types';
 import { CONTRACTIONS_MAP, ROBOTIC_TRANSITIONS_MAP } from './config';
 
+// 0. Persona Prefix Stripper (v1.0.0)
+// Strips any accidental [mascotName] prefix that the LLM or fallback path may have prepended.
+export class PersonaPrefixTransformer implements TransformerPlugin {
+  public id = 'persona-prefix-strip';
+  public version = '1.0.0';
+
+  public transform(text: string, _profile: ExpressionProfile): string {
+    // Match patterns like "[ollie] ", "[munch] ", "[OLLIE] " at the start of the string
+    return text.replace(/^\[[a-zA-Z]+\]\s*/i, '').trim();
+  }
+}
+
 // 1. Whitespace Transformer (v1.0.0)
 export class WhitespaceTransformer implements TransformerPlugin {
   public id = 'whitespace';
@@ -157,6 +169,7 @@ export class ResponseExpressionEngine {
   public expressionVersion = '1.0.0';
 
   constructor() {
+    this.pipeline.push(new PersonaPrefixTransformer());
     this.pipeline.push(new WhitespaceTransformer());
     this.pipeline.push(new FormattingTransformer());
     this.pipeline.push(new RhythmTransformer());

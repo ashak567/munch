@@ -76,7 +76,7 @@ async function generateMascotVoice(
   if (!trace.promptPackage) {
     const refls = trace.reflections.map(r => r.reflection).join(' ');
     return {
-      text: `[${trace.mascotCharacter}] ${refls} What else is on your mind?`,
+      text: `${refls} What else is on your mind?`,
       metrics: {
         providerId: 'fallback',
         modelId: 'fallback',
@@ -478,7 +478,7 @@ export async function POST(request: NextRequest) {
         console.error('[LLMGateway] Gateway invocation failed or timed out:', err);
         const refls = finalTrace.reflections.map((r: any) => r.reflection).join(' ');
         return {
-          text: `[${finalTrace.mascotCharacter}] ${refls} How are you holding up?`,
+          text: `${refls} How are you holding up?`,
           metrics: {
             providerId: 'fallback',
             modelId: 'fallback',

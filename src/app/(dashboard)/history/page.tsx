@@ -408,15 +408,6 @@ export default function HistoryPage() {
         )}
       </div>
 
-      {/* Footer Navigation Back to Dashboard */}
-      <div>
-        <button
-          onClick={() => router.push('/dashboard')}
-          className="w-full py-3.5 border-2 border-charcoal/10 rounded-2xl bg-white hover:bg-charcoal/5 text-charcoal font-semibold text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm"
-        >
-          Back to my space
-        </button>
-      </div>
     </div>
   )
 }

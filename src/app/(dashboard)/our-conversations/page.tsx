@@ -117,15 +117,6 @@ export default function OurConversationsPage() {
             <ArrowRight className="w-4 h-4" />
           </button>
         </div>
- 
-        <div>
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="w-full py-3.5 border-2 border-charcoal/10 rounded-2xl bg-white hover:bg-charcoal/5 text-charcoal font-semibold text-sm transition-all cursor-pointer"
-          >
-            Back to my space
-          </button>
-        </div>
       </div>
     )
   }
@@ -297,17 +288,6 @@ export default function OurConversationsPage() {
             </div>
           ))}
         </div>
- 
-      </div>
- 
-      {/* Action Footer */}
-      <div>
-        <button
-          onClick={() => router.push('/dashboard')}
-          className="w-full py-3.5 border-2 border-charcoal/10 rounded-2xl bg-white hover:bg-charcoal/5 text-charcoal font-semibold text-sm transition-all cursor-pointer shadow-sm"
-        >
-          Back to my space
-        </button>
       </div>
     </div>
   )
