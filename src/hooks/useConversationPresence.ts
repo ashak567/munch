@@ -59,7 +59,22 @@ export function useConversationPresence(
   // Tick loop — drives the state machine forward every TICK_INTERVAL_MS
   useEffect(() => {
     const interval = setInterval(() => {
-      setOutput(manager.tick());
+      const next = manager.tick();
+      setOutput((prev) => {
+        if (
+          prev.state === next.state &&
+          prev.expression === next.expression &&
+          prev.attentionTarget === next.attentionTarget &&
+          prev.isResponding === next.isResponding &&
+          prev.isReading === next.isReading &&
+          prev.isIdle === next.isIdle &&
+          prev.showTypingIndicator === next.showTypingIndicator &&
+          prev.profile === next.profile
+        ) {
+          return prev;
+        }
+        return next;
+      });
     }, TICK_INTERVAL_MS);
     return () => clearInterval(interval);
   }, [manager]);
@@ -69,7 +84,22 @@ export function useConversationPresence(
     (event: ConversationEvent) => {
       manager.dispatch(event);
       // Immediately snapshot current output after dispatching
-      setOutput(manager.tick());
+      const next = manager.tick();
+      setOutput((prev) => {
+        if (
+          prev.state === next.state &&
+          prev.expression === next.expression &&
+          prev.attentionTarget === next.attentionTarget &&
+          prev.isResponding === next.isResponding &&
+          prev.isReading === next.isReading &&
+          prev.isIdle === next.isIdle &&
+          prev.showTypingIndicator === next.showTypingIndicator &&
+          prev.profile === next.profile
+        ) {
+          return prev;
+        }
+        return next;
+      });
     },
     [manager]
   );

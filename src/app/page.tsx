@@ -1,7 +1,7 @@
 import React from 'react'
-import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import LandingPageClient from '@/app/components/LandingPageClient'
+import HomePageClient from '@/app/components/HomePageClient'
 
 export default async function LandingPage() {
   const supabase = await createClient()
@@ -10,7 +10,7 @@ export default async function LandingPage() {
   } = await supabase.auth.getUser()
 
   if (user) {
-    redirect('/dashboard')
+    return <HomePageClient />
   }
 
   return <LandingPageClient />

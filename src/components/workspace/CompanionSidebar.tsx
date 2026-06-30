@@ -1,18 +1,19 @@
-'use client';
+﻿'use client';
 
 import React from 'react';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Menu, ChevronLeft, ChevronRight, User } from 'lucide-react';
+import { ChevronLeft, ChevronRight, User } from 'lucide-react';
 import CompanionNavigation from './CompanionNavigation';
 import { WorkspacePage } from './WorkspaceController';
 import { MascotCharacter } from '../Mascot';
 import CompanionStage from '../companion/CompanionStage';
 import { MOTION_SYSTEM_VARIANTS } from './motion-system';
-import { SURFACE_SYSTEM } from './surface-system';
 
 interface CompanionSidebarProps {
-  activePage: WorkspacePage;
-  onNavigate: (page: WorkspacePage) => void;
+  activePage?: WorkspacePage;
+  onNavigate?: (page: WorkspacePage) => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
   activeMascot: MascotCharacter;
@@ -21,14 +22,15 @@ interface CompanionSidebarProps {
 }
 
 export default function CompanionSidebar({
-  activePage,
-  onNavigate,
   isCollapsed,
   onToggleCollapse,
   activeMascot,
   activeExpression,
   className = ''
 }: CompanionSidebarProps) {
+  const pathname = usePathname();
+  const isProfileActive = pathname === '/profile';
+
   return (
     <motion.aside
       variants={MOTION_SYSTEM_VARIANTS.sidebarSlide}
@@ -66,26 +68,26 @@ export default function CompanionSidebar({
         {/* Navigation list */}
         <div className="w-full">
           <CompanionNavigation
-            activePage={activePage}
-            onNavigate={onNavigate}
             variant="sidebar"
             isCollapsed={isCollapsed}
           />
         </div>
       </div>
 
-      {/* User profile shortcut / Settings link */}
+      {/* Profile link at bottom of sidebar */}
       <div className="w-full flex flex-col gap-2 border-t border-charcoal/5 pt-4">
-        <button
-          onClick={() => onNavigate('companion')}
-          className={`flex items-center gap-3 p-3.5 rounded-2xl font-semibold text-xs transition-all cursor-pointer w-full text-charcoal/60 hover:text-charcoal hover:bg-white/40 border border-transparent ${
-            activePage === 'companion' ? 'bg-primary/20 text-primary-dark border-primary/30' : ''
+        <Link
+          href="/profile"
+          className={`flex items-center gap-3 p-3.5 rounded-2xl font-semibold text-xs transition-all w-full border ${
+            isProfileActive
+              ? 'bg-primary/20 text-primary-dark border-primary/30 shadow-3xs'
+              : 'text-charcoal/60 hover:text-charcoal hover:bg-white/40 border-transparent'
           }`}
           style={{ minHeight: '44px' }}
         >
           <User className="w-4 h-4 flex-shrink-0" />
-          {!isCollapsed && <span className="truncate">Companion Profile</span>}
-        </button>
+          {!isCollapsed && <span className="truncate">Profile</span>}
+        </Link>
       </div>
     </motion.aside>
   );

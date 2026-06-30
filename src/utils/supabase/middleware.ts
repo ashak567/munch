@@ -30,9 +30,21 @@ export async function updateSession(request: NextRequest) {
 
   // IMPORTANT: DO NOT REMOVE
   // getUser() refreshes the session if it's expired.
-  const {
+  let {
     data: { user },
   } = await supabase.auth.getUser()
+
+  if (!user && process.env.NODE_ENV === 'development' && process.env.NEXT_PUBLIC_USE_MOCK_AUTH === 'true') {
+    user = {
+      id: '00000000-0000-0000-0000-000000000000',
+      email: 'qa-user@munchpick.com',
+      user_metadata: { full_name: 'QA Preview User' },
+      created_at: new Date().toISOString(),
+      app_metadata: {},
+      aud: 'authenticated',
+      role: 'authenticated',
+    } as any
+  }
 
   // Protect routes here:
   // - If user is not authenticated and is trying to access protected dashboard routes (under /dashboard or /history or /insights or /profile), redirect to /login

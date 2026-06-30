@@ -1,8 +1,7 @@
 import React from 'react'
-import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
-import BottomNav from '@/app/(dashboard)/components/BottomNav'
+import DashboardShell from './components/DashboardShell'
 import BackgroundVideo from '@/components/BackgroundVideo'
 import Envelope from '@/components/envelope/Envelope'
 import { WelcomeProvider } from '@/lib/envelope/WelcomeContext'
@@ -19,6 +18,8 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
     data: { user },
   } = await supabase.auth.getUser()
 
+  console.log("LAYOUT USER:", user)
+
   if (!user) {
     redirect('/login')
   }
@@ -33,36 +34,14 @@ export default async function DashboardLayout({ children }: DashboardLayoutProps
         {/* Private Background Video Stream */}
         <BackgroundVideo />
 
-        {/* Top App Bar */}
-        <header className="sticky top-0 z-40 glass-panel border-b border-white/40 px-4 py-3 flex items-center justify-between">
-          <Link href="/dashboard" className="flex items-center gap-1.5">
-            <span className="text-2xl">🍀</span>
-            <span className="font-display text-xl font-bold text-primary-dark">
-              Munch
-            </span>
-          </Link>
-
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-charcoal/70 hidden sm:inline">
-                Hi, <span className="font-semibold text-charcoal">{userName}</span>
-              </span>
-              <div className="w-8 h-8 rounded-full bg-secondary text-secondary-dark flex items-center justify-center font-bold text-sm border-2 border-white shadow-sm">
-                {userInitial}
-              </div>
-            </div>
-          </div>
-        </header>
-
-        {/* Main Content Area */}
-        <main className="flex-1 flex flex-col pb-24 max-w-lg mx-auto w-full px-4 pt-6">
+        {/* Responsive Shell:
+            - /dashboard (chat): renders children directly, no outer chrome
+            - All other routes: renders desktop sidebar + mobile header + bottom nav */}
+        <DashboardShell userName={userName} userInitial={userInitial}>
           {children}
-        </main>
+        </DashboardShell>
 
-        {/* Shared Bottom Navigation Component */}
-        <BottomNav />
-
-        {/* Surprise Letter from Munch */}
+        {/* Surprise Letter from Munch — fixed overlay, always present */}
         <Envelope />
       </WelcomeLayoutWrapper>
     </WelcomeProvider>

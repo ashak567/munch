@@ -1,28 +1,33 @@
 export interface NavigationItem {
   id: 'home' | 'journal' | 'companion' | 'settings';
   label: string;
-  iconName: 'Home' | 'BookOpen' | 'Heart' | 'Settings';
+  iconName: 'Home' | 'BookOpen' | 'MessageSquare' | 'User';
+  href: string;
 }
 
 export const WORKSPACE_NAVIGATION_CONFIG: NavigationItem[] = [
   {
     id: 'home',
     label: 'Home',
-    iconName: 'Home'
+    iconName: 'Home',
+    href: '/dashboard'
   },
   {
     id: 'journal',
     label: 'Journal',
-    iconName: 'BookOpen'
+    iconName: 'BookOpen',
+    href: '/history'
   },
   {
     id: 'companion',
-    label: 'Companion',
-    iconName: 'Heart'
+    label: 'Conversations',
+    iconName: 'MessageSquare',
+    href: '/our-conversations'
   },
   {
     id: 'settings',
-    label: 'Settings',
-    iconName: 'Settings'
+    label: 'Profile',
+    iconName: 'User',
+    href: '/profile'
   }
 ];

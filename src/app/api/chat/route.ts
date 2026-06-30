@@ -168,16 +168,42 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized.' }, { status: 401 });
     }
 
-    // 1. Fetch active chat
-    let { data: activeChat } = await supabase
-      .from('chats')
-      .select('*')
-      .eq('user_id', user.id)
-      .eq('status', 'active')
-      .maybeSingle();
+    const url = new URL(request.url);
+    const customChatId = url.searchParams.get('chatId');
+
+    let activeChat = null;
+    if (customChatId) {
+      const { data } = await supabase
+        .from('chats')
+        .select('*')
+        .eq('id', customChatId)
+        .eq('user_id', user.id)
+        .maybeSingle();
+      activeChat = data;
+    }
+
+    // Fallback to active chat if not found or not specified
+    if (!activeChat) {
+      const { data } = await supabase
+        .from('chats')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'active')
+        .maybeSingle();
+      activeChat = data;
+    }
 
     // 2. If no active chat, initialize one
     if (!activeChat) {
+      // Look up preferred mascot from user profile / preferences
+      const { data: profile } = await supabase
+        .from('users')
+        .select('preferred_mascot')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      const prefMascot = profile?.preferred_mascot || 'munch';
+
       const { data: newChat, error: chatError } = await supabase
         .from('chats')
         .insert({
@@ -185,9 +211,11 @@ export async function GET(request: NextRequest) {
           status: 'active',
           state: 'Listening',
           metadata: {
+            primaryMascot: prefMascot,
+            lastMascot: prefMascot,
             activeTopicKey: 'general',
             branches: {
-              general: { state: 'Listening', paths: [], mascot: 'munch' }
+              general: { state: 'Listening', paths: [], mascot: prefMascot }
             }
           }
         })
@@ -201,8 +229,8 @@ export async function GET(request: NextRequest) {
       await supabase.from('chat_messages').insert({
         chat_id: activeChat.id,
         sender: 'mascot',
-        content: "What's on your mind today? I'm here to listen.",
-        mascot_character: 'munch',
+        content: `What's on your mind today? I'm here to listen.`,
+        mascot_character: prefMascot,
         mascot_expression: 'idle'
       });
     }
@@ -257,6 +285,14 @@ export async function POST(request: NextRequest) {
 
     if (!activeChatData) {
       // Create new chat
+      const { data: profile } = await supabase
+        .from('users')
+        .select('preferred_mascot')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      const prefMascot = profile?.preferred_mascot || 'munch';
+
       const { data: newChat } = await supabase
         .from('chats')
         .insert({
@@ -264,9 +300,11 @@ export async function POST(request: NextRequest) {
           status: 'active',
           state: 'Listening',
           metadata: {
+            primaryMascot: prefMascot,
+            lastMascot: prefMascot,
             activeTopicKey: 'general',
             branches: {
-              general: { state: 'Listening', paths: [], mascot: 'munch' }
+              general: { state: 'Listening', paths: [], mascot: prefMascot }
             }
           }
         })
@@ -458,6 +496,10 @@ export async function POST(request: NextRequest) {
     }
 
     finalTrace = await runCognitivePipeline(activePipeline, traceToUse, context);
+
+    // Lock mascot character to the session's primary mascot to maintain consistency
+    const primaryMascot = chatMetadata.primaryMascot || chatMetadata.lastMascot || 'munch';
+    finalTrace.mascotCharacter = primaryMascot;
 
     // 8. Call LLM Gateway & Validate Response in a Retry Loop
     const validator = new ResponseValidator();

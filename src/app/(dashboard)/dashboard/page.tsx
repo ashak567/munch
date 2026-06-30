@@ -21,7 +21,6 @@ import { CompanionPresenceBuilder } from '@/components/companion/CompanionPresen
 import { PresenceExperienceManager } from '@/components/companion/PresenceExperienceManager'
 import { InteractionCoordinator } from '@/components/companion/InteractionCoordinator'
 import { MOTION_SYSTEM_VARIANTS } from '@/components/workspace/motion-system'
-import { SURFACE_SYSTEM } from '@/components/workspace/surface-system'
 
 interface ChatMessage {
   id: string
@@ -244,8 +243,8 @@ export default function DashboardPage() {
     mascotPalette: getThemePalette(activeMascot)
   }
 
-  // Load chat and messages on mount
-  const fetchChat = async () => {
+  // Load chat and messages on mount or when custom chatId changes
+  const fetchChat = async (selectedChatId?: string | null) => {
     try {
       setInitializing(true)
       
@@ -256,7 +255,8 @@ export default function DashboardPage() {
         setUserName(name)
       }
 
-      const res = await fetch('/api/chat')
+      const url = selectedChatId ? `/api/chat?chatId=${selectedChatId}` : '/api/chat'
+      const res = await fetch(url)
       const prefRes = await fetch('/api/preferences')
       
       if (res.ok) {
@@ -286,7 +286,9 @@ export default function DashboardPage() {
   const [activeMicroReaction, setActiveMicroReaction] = useState<import('@/components/Mascot').MicroReaction>('none')
 
   useEffect(() => {
-    fetchChat()
+    const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null
+    const urlChatId = searchParams?.get('chatId')
+    fetchChat(urlChatId)
     dispatchConv({ type: 'session_resumed' })
   }, [])
 
@@ -581,16 +583,6 @@ export default function DashboardPage() {
                   <p className="text-sm text-charcoal/70 leading-relaxed px-4">
                     {generateDynamicGreeting(activeMascot, userName, activeTopicKey, totalDecisions)}
                   </p>
-                </div>
-                <div className="w-full pt-4">
-                  <div className="p-4 bg-white/70 border border-white/95 rounded-2xl shadow-3xs text-left">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-primary-dark block mb-2">
-                      Start a conversation
-                    </span>
-                    <p className="text-xs text-charcoal/60 leading-normal">
-                      Type whatever is on your mind. You can share how your day went, something that is worrying you, or just say hello.
-                    </p>
-                  </div>
                 </div>
               </motion.div>
             ) : (
