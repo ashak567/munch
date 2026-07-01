@@ -17,6 +17,7 @@
 :root {
   --background: #FFF9F5;
   --foreground: #4A4A4A;
+  --bottom-nav-height: 72px;
 }
 
 body {

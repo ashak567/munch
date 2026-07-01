@@ -505,7 +505,11 @@ export default function DashboardPage() {
         className="flex flex-col justify-between w-full h-[100dvh] relative px-4 mx-auto overflow-hidden transition-all duration-300"
         style={{ 
           maxWidth: `${layout.chatWidth}px`, 
-          paddingBottom: `${layout.keyboardHeight || layout.safeAreaInsets.bottom}px`,
+          paddingBottom: layout.isMobile
+            ? (layout.keyboardHeight 
+                ? `${layout.keyboardHeight}px` 
+                : 'calc(var(--bottom-nav-height) + env(safe-area-inset-bottom) + 32px)')
+            : `${layout.safeAreaInsets.bottom}px`,
           paddingTop: `${layout.safeAreaInsets.top}px`
         }}
       >
@@ -781,7 +785,7 @@ export default function DashboardPage() {
               ref={textareaRef}
               rows={1}
               value={inputValue}
-              onChange={(e) => setInputValue(e.target.value.slice(0, 200))}
+              onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={(e) => InteractionCoordinator.handleComposerKeyDown(e, handleSendMessage, loading || currentState === 'Archived')}
               onFocus={() => { setIsFocused(true); dispatchConv({ type: 'user_typing_started' }) }}
               onBlur={() => { setIsFocused(false); dispatchConv({ type: 'user_typing_stopped' }) }}
@@ -791,9 +795,6 @@ export default function DashboardPage() {
             />
 
             <div className="flex flex-col items-center gap-1 flex-shrink-0 mb-0.5">
-              <span className="text-[8px] text-charcoal/30 font-bold select-none">
-                {inputValue.length}/200
-              </span>
               <MotionTap>
                 <button
                   onClick={handleSendMessage}

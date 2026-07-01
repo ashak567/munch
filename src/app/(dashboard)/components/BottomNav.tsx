@@ -4,9 +4,11 @@ import React from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Sparkles, History, MessageSquare, User } from 'lucide-react'
+import { useResponsiveLayout } from '@/components/companion/LayoutManager'
 
 export default function BottomNav() {
   const pathname = usePathname()
+  const layout = useResponsiveLayout()
 
   const navItems = [
     { href: '/dashboard', label: 'Munch', icon: Sparkles },
@@ -15,9 +17,20 @@ export default function BottomNav() {
     { href: '/profile', label: 'Profile', icon: User },
   ]
 
+  // Hide the floating bottom nav when the keyboard is open on mobile to prevent layout overlaps
+  if (layout.keyboardHeight > 0) {
+    return null
+  }
+
   return (
-    <nav className="fixed bottom-6 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md z-40">
-      <div className="glass-panel border border-white/50 rounded-2xl py-2 px-4 shadow-lg flex items-center justify-around">
+    <nav 
+      className="fixed left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-md z-40"
+      style={{
+        bottom: 'calc(env(safe-area-inset-bottom) + 16px)',
+        height: 'var(--bottom-nav-height)',
+      }}
+    >
+      <div className="glass-panel border border-white/50 rounded-2xl py-2 px-4 shadow-lg flex items-center justify-around h-full">
         {navItems.map((item) => {
           const Icon = item.icon
           const isActive = pathname === item.href
